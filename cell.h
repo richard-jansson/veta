@@ -37,4 +37,3 @@ void destroy_cells(cell *curr);
 int select_cell(cell *curr, int cell);
 void clear_selection(cell *root);
 symbol *get_selected_symbol(cell *root);
-

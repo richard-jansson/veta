@@ -25,6 +25,20 @@ void _ungrabkeys();
 event_t *_get_event_from_keycode(int keycode);
 /* End of private functions */
 
+/* Callback functions / Events */
+void (*onevent)(event_t *ev);
+void (*onhaskeymap)(symbol *symbols,int n);
+/* End of callback funtions */ 
+
+
+void ui_onevent(void(*callback)(event_t *ev)){
+	onevent=callback;	
+}
+
+void ui_haskeymap(void(*callback)(symbol *symbols,int n)){
+	onhaskeymap=callback;
+}
+
 event_t kbio_undefined={0,UNDEFINED,-1};
 event_t keybindings[]={
 	{24,SELECT_CELL,0},
@@ -60,6 +74,10 @@ int n_unique=0,max_keysyms=0;
 keyboardio kbio;
 modifier_x11 *g_modifiers=NULL;
 int g_modifier_count;
+
+void ui_quit(){
+	running=0;
+}
 
 void ui_init(int w,int h,int x,int y){
 	_w=w;
@@ -125,6 +143,7 @@ void ui_loop(){
 			case KeyRelease:
 				uk_log("KeyRelease %i",ev.xkey.keycode);
 				v_event=_get_event_from_keycode(ev.xkey.keycode);
+				onevent(v_event);
 				break;
 			case DestroyNotify:
 					uk_log("destroy window");
@@ -153,6 +172,8 @@ void ui_loop(){
 				break;
 		}
 	}	
+	uk_log("ui_loop end!");
+	writestate(STATE_FILE,lastX,lastY);
 }
 // Set x11 window on top
 void _set_on_top(Display *dpy,Window window){
@@ -251,6 +272,8 @@ void _setupkeymap(){
 	_get_unique_keycodes(keymap,min,max,keysyms_per_keycode,0);
 	_get_unique_keycodes(keymap,min,max,keysyms_per_keycode,1);
 	uk_log("got %i unique",n_unique);
+
+	onhaskeymap(unique,n_unique);
 }
 int _already_used(char *s){
 	for(int i=0;i<n_unique;i++)

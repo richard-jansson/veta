@@ -11,3 +11,5 @@ B: Save state
 
 C: logging functionality 
 1. Copy paste from old version
+
+D: handle WM_DELETE atom
