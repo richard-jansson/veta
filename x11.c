@@ -19,9 +19,10 @@ Window win;
 XVisualInfo visualinfo ;
 Window win=0,root,parent=0;
 int x,y,w,h;
+int lastX=0,lastY=0;
 int running=1;
 
-void ui_init(){
+void ui_init(int w,int h,int x,int y){
 	dpy=XOpenDisplay("");
 	screen=DefaultScreen(dpy);
 	root=DefaultRootWindow(dpy);
@@ -29,8 +30,8 @@ void ui_init(){
 	XMatchVisualInfo(dpy, screen, 32, TrueColor, &visualinfo);
 
 	uk_log("Iniitializing UI");
+	uk_log("Win @ (%i,%i,%i,%i)",x,y,w,h);
 
-	w=h=480;
 	
 	 attr.colormap   = XCreateColormap( dpy, root, visualinfo.visual, AllocNone) ;
 	 attr.event_mask = ExposureMask | KeyPressMask ;
@@ -66,18 +67,46 @@ void ui_init(){
 
 	// Try to make borderless
 	_make_borderless(dpy,win);
+
+	// Bind to what stuff?
+	unsigned long eventmask;
+	eventmask=StructureNotifyMask|SubstructureNotifyMask;
+	uk_log("event mask = x%x",eventmask);
+	XSelectInput(dpy,root,eventmask);
 }
 
 void ui_loop(){
+	Window root_return,parent,*children_return;
+	unsigned int n_children;
 	XEvent ev;
 	while(running){
 		XNextEvent(dpy,&ev);
 		switch(ev.type){
+			case DestroyNotify:
+					uk_log("destroy window");
+					running=0;
+					break;
 			case Expose:
 				_draw_box(w,h,0,0,_rgb2XColor(128,128,128));
 				break;
+			case ReparentNotify:
+				uk_log("Reparent win=%x par=%x",ev.xreparent.window,ev.xreparent.parent);
+				parent=ev.xreparent.parent;
+				break;
+			case ConfigureNotify:
+				// Let's start out with window
+				for(Window cwin=win; cwin != 0; cwin=parent){
+					XQueryTree(dpy,cwin,&root_return,&parent,&children_return,&n_children);
+					if(parent == root){
+						XWindowAttributes attr;
+						XGetWindowAttributes(dpy,cwin,&attr);
+						lastX=attr.x; lastY=attr.y;
+						uk_log("window frame %x has pos (%i,%i)",lastX,lastY);
+					}
+				}
+				break;
 		}
-	}
+	}	
 }
 // Set x11 window on top
 void _set_on_top(Display *dpy,Window window){
