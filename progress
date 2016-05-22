@@ -1,0 +1,13 @@
+Sun May 22 14:18:07 EEST 2016
+A: Step one create XRandr /  X11 window with the following specifications:
+1. Borderless
+2. Stay on top
+3. Sticky window 
+4. Transparent 
+
+B: Save state 
+1. x, y, w, h of window 
+
+
+C: logging functionality 
+1. Copy paste from old version
