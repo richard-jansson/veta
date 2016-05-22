@@ -19,6 +19,7 @@ int main(){
 	state *st=readstate(STATE_FILE);
 	ui_init(WIDTH,HEIGHT,st->x,st->y);
 
+
 	ui_loop();
 	return 1;
 }
