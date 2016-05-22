@@ -18,11 +18,14 @@ GC       gc;
 Window win;
 XVisualInfo visualinfo ;
 Window win=0,root,parent=0;
-int x,y,w,h;
+int x,y,_w,_h;
 int lastX=0,lastY=0;
 int running=1;
 
 void ui_init(int w,int h,int x,int y){
+	_w=w;
+	_h=h;
+
 	dpy=XOpenDisplay("");
 	screen=DefaultScreen(dpy);
 	root=DefaultRootWindow(dpy);
@@ -54,16 +57,8 @@ void ui_init(int w,int h,int x,int y){
 
 	_set_on_top(dpy,win);
 
-/*	GLXContext glcontext=glXCreateContext(dpy,&visualinfo,0,True);
-	if(!glcontext){
-		uk_log("No open gl support!");
-		return 1;
-	}
-	glXMakeCurrent(dpy,win,glcontext);*/
 	XMapWindow(dpy,win);
-
 	XMoveWindow(dpy,win,x,y);
-
 
 	// Try to make borderless
 	_make_borderless(dpy,win);
@@ -73,6 +68,8 @@ void ui_init(int w,int h,int x,int y){
 	eventmask=StructureNotifyMask|SubstructureNotifyMask;
 	uk_log("event mask = x%x",eventmask);
 	XSelectInput(dpy,root,eventmask);
+
+	XFlush(dpy);
 }
 
 void ui_loop(){
@@ -87,7 +84,9 @@ void ui_loop(){
 					running=0;
 					break;
 			case Expose:
-				_draw_box(w,h,0,0,_rgb2XColor(128,128,128));
+				uk_log("Expose");
+				_draw_box(_w,_h,0,0,_rgb2XColor(128,128,128));
+				XFlush(dpy);
 				break;
 			case ReparentNotify:
 				uk_log("Reparent win=%x par=%x",ev.xreparent.window,ev.xreparent.parent);
@@ -159,6 +158,12 @@ void _draw_box(int w,int h,int x,int y,XColor bg){
 	GC bg_gc=XCreateGC(dpy,win,0,0);
 
 	XAllocColor(dpy,attr.colormap,&bg);
+	
+	uk_log("fill rectangle d=(%i,%i,%i,%i) c=(%i,%i,%i) p=%i",
+			_w,_h,x,y,
+			bg.red,bg.green,bg.blue,
+			bg.pixel);
+	
 	XSetForeground(dpy,bg_gc,bg.pixel);
 	XSetFillStyle(dpy,bg_gc,FillSolid);
 	XFillRectangle(dpy,win,bg_gc,x,y,w,h);
