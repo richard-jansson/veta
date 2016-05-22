@@ -20,8 +20,31 @@ int _already_used(char *s);
 int _is_modifier(KeyCode kc);
 void _add_unique(char *s,KeySym ks,int mod,KeyCode keycode);
 int _get_keycode_count(KeySym *keymap,int min,int max,int keysyms_per_keycode);
+void _grabkeys();
+void _ungrabkeys();
+event_t *_get_event_from_keycode(int keycode);
 /* End of private functions */
 
+event_t kbio_undefined={0,UNDEFINED,-1};
+event_t keybindings[]={
+	{24,SELECT_CELL,0},
+	{25,SELECT_CELL,1},
+	{26,SELECT_CELL,2},
+	{27,SELECT_CELL,3},
+
+	{38,SELECT_CELL,4},
+	{39,SELECT_CELL,5},
+	{40,SELECT_CELL,6},
+	{41,SELECT_CELL,7},
+
+	{52,SELECT_CELL,8},
+	{53,SELECT_CELL,9},
+	{54,SELECT_CELL,10},
+	{55,SELECT_CELL,11},
+
+	{50,RESET,-1}, // Shift 
+	{49,QUIT,-1}, // Section
+	{23,SWITCH_TREE,-1}}; // Tab
 
 Display *dpy=NULL;
 XSetWindowAttributes attr ;
@@ -87,15 +110,22 @@ void ui_init(int w,int h,int x,int y){
 
 	kbio.start=kbio.stop=kbio.n=0;
 	_setupkeymap();
+
+	_grabkeys();
 }
 
 void ui_loop(){
 	Window root_return,parent,*children_return;
 	unsigned int n_children;
 	XEvent ev;
+	event_t *v_event;
 	while(running){
 		XNextEvent(dpy,&ev);
 		switch(ev.type){
+			case KeyRelease:
+				uk_log("KeyRelease %i",ev.xkey.keycode);
+				v_event=_get_event_from_keycode(ev.xkey.keycode);
+				break;
 			case DestroyNotify:
 					uk_log("destroy window");
 					running=0;
@@ -238,8 +268,6 @@ void _add_unique(char *s,KeySym ks,int mod,KeyCode keycode){
 //	assert(n_unique < max_keysyms);
 	unique[n_unique].name=malloc(strlen(s));
 	memcpy(unique[n_unique].name,s,strlen(s)+1);
-
-	uk_log("Add unique: %s",s);
 	
 	symbol_x11 *d=malloc(sizeof(symbol_x11));
 	d->ks=ks;
@@ -259,4 +287,39 @@ int _get_keycode_count(KeySym *keymap,int min,int max,int keysyms_per_keycode){
 	}
 	max_keysyms=count_keysyms;
 	return count_keysyms;
+}
+void _grabkeys(){
+	Window root = DefaultRootWindow(dpy);
+	// Shift, Lock, ctrl
+	unsigned int modifiers=0b100;
+	uk_log("Grabbing keys");
+	for(int i=0;i<sizeof(keybindings)/sizeof(event_t);i++){
+//		uk_log("modifiers = 0x%x\n",modifiers);
+		XGrabKey(dpy,keybindings[i].keycode,0,root,False,GrabModeAsync,GrabModeAsync);
+		XGrabKey(dpy,keybindings[i].keycode,1,root,False,GrabModeAsync,GrabModeAsync);
+		XGrabKey(dpy,keybindings[i].keycode,2,root,False,GrabModeAsync,GrabModeAsync);
+		XGrabKey(dpy,keybindings[i].keycode,4,root,False,GrabModeAsync,GrabModeAsync);
+//		XGrabKey(dpy,keybindings[i].keycode,8,root,False,GrabModeAsync,GrabModeAsync);
+//		XGrabKey(dpy,keybindings[i].keycode,16,root,False,GrabModeAsync,GrabModeAsync);
+	}
+	XFlush(dpy);
+}
+void _ungrabkeys(){
+	uk_log("Ungrabbing keys");
+	Window root = DefaultRootWindow(dpy);
+	for(int i=0;i<sizeof(keybindings)/sizeof(event_t);i++){
+		XUngrabKey(dpy,keybindings[i].keycode,0,root);
+/*		XUngrabKey(dpy,keybindings[i].keycode,1,root);
+		XUngrabKey(dpy,keybindings[i].keycode,2,root);
+		XUngrabKey(dpy,keybindings[i].keycode,4,root);*/
+//		XUngrabKey(dpy,keybindings[i].keycode,8,root);
+//		XUngrabKey(dpy,keybindings[i].keycode,16,root);
+	}
+	XFlush(dpy);
+}
+event_t *_get_event_from_keycode(int keycode){
+	for(int i=0;i<sizeof(keybindings)/sizeof(event_t);i++){
+		if(keybindings[i].keycode==keycode) return &keybindings[i];
+	}
+	return &kbio_undefined;
 }

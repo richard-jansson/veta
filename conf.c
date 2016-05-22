@@ -21,7 +21,7 @@ state *readstate(char *path){
 	fread((void*)&status,1,sizeof(status),fd);
 	if(status.magic!=MAGIC){
 		uk_log("Faulty magic in %s",path);
-		initstate();
+		_initstate();
 		return &status;
 	}
 	fclose(fd);
