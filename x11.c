@@ -6,6 +6,8 @@
 /* Private functions */
 void _set_on_top(Display *dpy,Window window);
 void _make_borderless(Display *dpy,Window win);
+void _draw_box(int w,int h,int x,int y,XColor col);
+XColor _rgb2XColor(int r,int g,int b);
 /* End of private functions */
 
 
@@ -72,8 +74,7 @@ void ui_loop(){
 		XNextEvent(dpy,&ev);
 		switch(ev.type){
 			case Expose:
-//				XFillRectangle(dpy,win,blackgc,0,0,w,h);				
-				XFlush(dpy);
+				_draw_box(w,h,0,0,_rgb2XColor(128,128,128));
 				break;
 		}
 	}
@@ -115,4 +116,22 @@ void _make_borderless(Display *dpy,Window win){
 
 	XChangeProperty(dpy,win,wm_hints,wm_hints,32,
 						PropModeReplace,(unsigned char*)&mhints,sizeof(mhints)/sizeof(long));
+}
+
+XColor _rgb2XColor(int r,int g,int b){
+	XColor c1;
+	c1.red=r*256;
+	c1.green=g*256;
+	c1.blue=b*256;
+	return c1;
+}
+
+void _draw_box(int w,int h,int x,int y,XColor bg){
+	GC bg_gc=XCreateGC(dpy,win,0,0);
+
+	XAllocColor(dpy,attr.colormap,&bg);
+	XSetForeground(dpy,bg_gc,bg.pixel);
+	XSetFillStyle(dpy,bg_gc,FillSolid);
+	XFillRectangle(dpy,win,bg_gc,x,y,w,h);
+	XFlush(dpy);
 }
