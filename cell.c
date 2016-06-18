@@ -11,7 +11,8 @@ cell *deepest_selected_cell=NULL;
 int prev_lvl_selected=-1;
 int max_symbols=0,symbols_added=0;
 
-cell *create_recurse(int lvl,int cellsize,int depth,int childn,cell *parent){
+cell *create_recurse(int lvl,int cellsizen,int depth,int childn,cell *parent){
+	int cellsize=CELLS_W*CELLS_H;
 	cell *curr=NULL;
 	curr=malloc(sizeof(cell));
 	curr->children=malloc(sizeof(cell*)*cellsize);

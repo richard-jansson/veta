@@ -13,7 +13,7 @@
 /* Private functions */
 void _set_on_top(Display *dpy,Window window);
 void _make_borderless(Display *dpy,Window win);
-void _draw_box(int w,int h,int x,int y,XColor col);
+void draw_box(int w,int h,int x,int y,int r,int g,int b);
 XColor _rgb2XColor(int r,int g,int b);
 void _setupkeymap();
 int _already_used(char *s);
@@ -22,12 +22,14 @@ void _add_unique(char *s,KeySym ks,int mod,KeyCode keycode);
 int _get_keycode_count(KeySym *keymap,int min,int max,int keysyms_per_keycode);
 void _grabkeys();
 void _ungrabkeys();
+void draw_text_box(char *txt,int w,int h,int x,int y,rgb fg,rgb bg);
 event_t *_get_event_from_keycode(int keycode);
 /* End of private functions */
 
 /* Callback functions / Events */
 void (*onevent)(event_t *ev);
 void (*onhaskeymap)(symbol *symbols,int n);
+void (*onrender)();
 /* End of callback funtions */ 
 
 
@@ -37,6 +39,10 @@ void ui_onevent(void(*callback)(event_t *ev)){
 
 void ui_haskeymap(void(*callback)(symbol *symbols,int n)){
 	onhaskeymap=callback;
+}
+
+void ui_render(void(*callback)()){
+	onrender=callback;
 }
 
 event_t kbio_undefined={0,UNDEFINED,-1};
@@ -144,14 +150,17 @@ void ui_loop(){
 				uk_log("KeyRelease %i",ev.xkey.keycode);
 				v_event=_get_event_from_keycode(ev.xkey.keycode);
 				onevent(v_event);
+				onrender();
+				XFlush(dpy);
 				break;
 			case DestroyNotify:
-					uk_log("destroy window");
-					running=0;
-					break;
+				uk_log("destroy window");
+				running=0;
+				break;
 			case Expose:
-				uk_log("Expose");
-				_draw_box(_w,_h,0,0,_rgb2XColor(128,128,128));
+/*				uk_log("Expose");
+				_draw_box(_w,_h,0,0,_rgb2XColor(128,128,128));*/
+				onrender();
 				XFlush(dpy);
 				break;
 			case ReparentNotify:
@@ -222,7 +231,8 @@ XColor _rgb2XColor(int r,int g,int b){
 	return c1;
 }
 
-void _draw_box(int w,int h,int x,int y,XColor bg){
+void draw_box(int w,int h,int x,int y,int r,int g,int b){
+	XColor bg=_rgb2XColor(r,g,b);
 	GC bg_gc=XCreateGC(dpy,win,0,0);
 
 	XAllocColor(dpy,attr.colormap,&bg);
@@ -345,4 +355,32 @@ event_t *_get_event_from_keycode(int keycode){
 		if(keybindings[i].keycode==keycode) return &keybindings[i];
 	}
 	return &kbio_undefined;
+}
+
+void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
+	XColor fg=_rgb2XColor(c1.r,c1.g,c1.b);
+	XColor bg=_rgb2XColor(c2.r,c2.g,c2.b);
+	assert(txt);
+
+	draw_box(w,h,x,y,c2.r,c2.g,c2.b);
+
+	GC fg_gc=XCreateGC(dpy,win,0,0);
+	XAllocColor(dpy,attr.colormap,&fg);
+	XSetForeground(dpy,fg_gc,fg.pixel);
+
+	uk_log("Draw text!!!!");
+	x+=w/4;
+	y+=h/2;
+	XDrawString(dpy,win,fg_gc,x,y,txt,strlen(txt));
+	XFlush(dpy);
+
+
+/*	SDL_Surface *line = TTF_RenderText_Shaded(font,txt,fg,bg);
+	if(!line) return;
+	SDL_Rect fontdst={
+				x+(w-line->w)/2,
+				y+(h-line->h)/2,
+				line->w,
+				line->h};
+	SDL_BlitSurface(line,NULL,window,&fontdst); */
 }

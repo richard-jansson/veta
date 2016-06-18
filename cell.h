@@ -18,9 +18,9 @@ typedef struct _symbol{
 } symbol;
 
 typedef struct _cell{
+	int level;
 	int nchildren;
 	int selected;
-	int level;
 	int n;
 	int depth; 
 	int cellsize;
