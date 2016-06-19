@@ -124,7 +124,7 @@ rgb get_color(int n,int bright){
 	yuv c1;
 
 	c1=yuv_colors[n];
-	if(bright) c1.y+=0.25;
+	if(bright) c1.y+=0.5;
 	yuv2rgb(&c,c1);
 	return c;
 }

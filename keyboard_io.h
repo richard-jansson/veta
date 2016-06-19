@@ -34,7 +34,7 @@ typedef struct _event{
 
 keyboardio * init_keyboardio();
 int get_event(event_t *event);
-void sendkey(symbol_x11 *sym,int press_and_release,int toggled);
+void sendkey(void *sym,int press_and_release,int toggled);
 int is_modifier(KeyCode keycode);
 
 KeyCode get_modifier_keycode(int modifier);

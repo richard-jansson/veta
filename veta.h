@@ -35,3 +35,4 @@ typedef struct _box {
 	int x0,y0;
 	int w,h;
 }box;
+
