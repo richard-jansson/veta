@@ -1,4 +1,5 @@
 #include<stdlib.h>
+#include<assert.h>
 
 #include "veta.h"
 
@@ -11,6 +12,18 @@
 #include "render.h"
 
 cell *root;
+
+/* Configuration options */
+char *symbol_file=NULL; 
+smode_t symbol_mode;
+/* end of configuration options */
+
+void usage(char *cmd){
+	printf("Usage: %s \n",cmd);	
+	printf("\t--dump-symbols [file]\t dump symbols to file\n");
+	printf("\t--load-symbols [file]\t load symbols from  file\n");
+	exit(1);
+}
 
 void veta_exit(){
 	uk_log("veta exit!");
@@ -61,6 +74,7 @@ int render_cell(cell *cell,void *data){
 	int r=random()%255;
 	int g=random()%255;
 	int b=random()%255;
+	assert(cell);
 	if(cell->level>1){
 		if(cell->symbol->name){
 			rgb fg={255,255,255};
@@ -104,9 +118,26 @@ void veta_render(){
 	render_cell(root,&b);
 }
 
-int main(){
+int main(int argc,char *argv[]){
 	atexit(veta_exit);
 	debug_init(LOG_FILE);
+
+	for(int i=1;i<argc;i++){
+		if(!strcmp("--dump-symbols",argv[i])){
+			symbol_mode=DUMP;	
+			i++;
+			if(i>=argc) usage(argv[0]);
+			symbol_file=argv[i];
+			uk_log("Dumping to %s\n",symbol_file);
+		}else if(!strcmp("--load-symbols",argv[i])){
+			symbol_mode=LOAD;	
+			i++;
+			if(i>=argc) usage(argv[0]);
+			symbol_file=argv[i];
+		}else{
+			usage(argv[0]);
+		}
+	}
 
 	state *st=readstate(STATE_FILE);
 

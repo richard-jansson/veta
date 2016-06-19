@@ -10,6 +10,13 @@
 #include "veta.h"
 #include "cell.h"
 
+#define FORMAT "%s %i %i %i\n"
+
+/* Global variables */
+FILE *sym_file=NULL;
+
+/* Global */ 
+
 /* Private functions */
 void _set_on_top(Display *dpy,Window window);
 void _make_borderless(Display *dpy,Window win);
@@ -245,6 +252,19 @@ void draw_box(int w,int h,int x,int y,int r,int g,int b){
 void _get_unique_keycodes(KeySym *keymap,int min,int max,int keysyms_per_keycode,int pass){
 	// We really shouldn't skip all modifiers after 3
 	int num=0;
+
+	if(symbol_mode==DUMP){
+		uk_log("Opening %s\n",symbol_file);
+		sym_file=fopen(symbol_file,"w+");
+		if(!sym_file){
+		}
+		assert(sym_file);
+		fprintf(sym_file,"# x11\n");
+		fprintf(sym_file,"#\n");
+		fprintf(sym_file,"# line starting with  # is a comment\n");
+		fprintf(sym_file,"# Only edit below this line!\n");
+	}
+
 	for(int modifier=0;modifier<keysyms_per_keycode && modifier < MOD_MAX;modifier++){
 		// We don't need caps lock since shift will do the same
 //		if(modifier == 1 ) continue;
@@ -265,6 +285,35 @@ void _get_unique_keycodes(KeySym *keymap,int min,int max,int keysyms_per_keycode
 }
 void _setupkeymap(){
 	uk_log("setup keymap");
+	if(symbol_mode==LOAD){
+		char *line=NULL;
+		size_t len=0;
+		int read=0;
+
+		sym_file=fopen(symbol_file,"r");
+		assert(sym_file);
+		int  n_keysyms=0;
+		while((read=getline(&line,&len,sym_file)) != -1){
+			if(*line=='#') continue;
+			n_keysyms++;
+		}	
+		unique=malloc(n_keysyms*sizeof(symbol));
+		assert(unique);
+		uk_log("we have %i keysysm in %s\n",n_keysyms,symbol_file);
+	
+		fseek(sym_file,0,SEEK_SET);
+		while((read=getline(&line,&len,sym_file)) != -1){
+			if(*line=='#') continue;
+			char name[128];
+			int ks,mod,keycode;
+			sscanf(line,FORMAT,&name,&ks,&mod,&keycode);
+			uk_log(FORMAT,name,ks,mod,keycode);
+			_add_unique(name,ks,mod,keycode);
+		}
+
+		onhaskeymap(unique,n_unique);
+		return;
+	}
 	int min,max,keysyms_per_keycode;
 	KeySym *keymap;
 	XModifierKeymap *modifiers;
@@ -298,7 +347,11 @@ int _is_modifier(KeyCode kc){
 	return 0;
 }
 void _add_unique(char *s,KeySym ks,int mod,KeyCode keycode){
-	uk_log("[%s]\t%i\t%i\t%i",s,ks,mod,keycode);
+	if(symbol_mode==DUMP){
+//§		fprintf(sym_file,"[%s]\t%i\t%i\t%i\n",s,(int)ks,mod,keycode);
+		fprintf(sym_file,FORMAT,s,(int)ks,mod,keycode);
+	}
+//	uk_log("[%s]\t%i\t%i\t%i",s,ks,mod,keycode);
 //	assert(n_unique < max_keysyms);
 	unique[n_unique].name=malloc(strlen(s));
 	memcpy(unique[n_unique].name,s,strlen(s)+1);
@@ -366,7 +419,7 @@ void sendkey(void *s,int press_and_release,int toggled){
 
 	kbio.lastsent=sym->keycode;
 
-//	ungrabkeys();
+	ungrabkeys();
 	XFlush(dpy);
 
 	uk_log("send keysym 0x%x keycode %i %s modifier=%i",
@@ -381,6 +434,8 @@ void sendkey(void *s,int press_and_release,int toggled){
 	XFlush(dpy);
 
 	XFlush(dpy);
+
+	grabkeys();
 }
 
 void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){

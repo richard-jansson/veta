@@ -36,3 +36,7 @@ typedef struct _box {
 	int w,h;
 }box;
 
+extern char *symbol_file; 
+typedef enum  {NONE,LOAD,DUMP} smode_t;
+extern smode_t symbol_mode;
+
