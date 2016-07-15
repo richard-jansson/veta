@@ -87,7 +87,7 @@ int render_cell(cell *cell,void *data){
 
 			draw_text_box(cell->symbol->name,ob->w,ob->h,ob->x0,ob->y0,fg,bg);
 		}else{
-			draw_box(ob->w,ob->h,ob->x0,ob->y0,r,g,b);
+//			draw_box(ob->w,ob->h,ob->x0,ob->y0,r,g,b);
 		}
 //		uk_log("[%i,%i,%i,%i]\n",ob->w,ob->h,ob->x0,ob->y0);
 	} else {

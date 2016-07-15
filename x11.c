@@ -4,7 +4,6 @@
 #include<X11/Xlib.h>
 #include<X11/Xutil.h>
 
-
 #include "keyboard_io.h"
 #include"debug.h"
 #include "veta.h"
@@ -163,7 +162,10 @@ void ui_loop(){
 				break;
 			case DestroyNotify:
 				uk_log("destroy window");
-				running=0;
+				uk_log("subwindow = %i\n",ev.subwindow);
+				//  Destroy notify here makes the program close whenever you open 
+				// A new window on my machine. Wonder why?
+//				running=0;
 				break;
 			case Expose:
 /*				uk_log("Expose");
@@ -270,7 +272,9 @@ void draw_box(int w,int h,int x,int y,int r,int g,int b){
 	XAllocColor(dpy,attr.colormap,&bg);
 	
 	XSetForeground(dpy,bg_gc,bg.pixel);
+
 	XSetFillStyle(dpy,bg_gc,FillSolid);
+//	XFillRectangle(dpy,win,bg_gc,x0,y0,w0,h0);
 	XFillRectangle(dpy,win,bg_gc,x,y,w,h);
 	XFlush(dpy);
 }
@@ -466,22 +470,49 @@ void sendkey(void *s,int press_and_release,int toggled){
 void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
 	XColor fg=_rgb2XColor(c1.r,c1.g,c1.b);
 	XColor bg=_rgb2XColor(c2.r,c2.g,c2.b);
+	XColor white=_rgb2XColor(255,255,255);
 	assert(txt);
 
-	draw_box(w,h,x,y,c2.r,c2.g,c2.b);
+	int x0,y0,w0,h0;
+	x0=x+w*0.1;
+	y0=y+h*0.1;
+	w0=w*0.8;
+	h0=h*0.7;
+
+//	draw_box(w,h,x,y,c2.r,c2.g,c2.b);
+	draw_box(w0,h0,x0,y0,c2.r,c2.g,c2.b);
 
 	GC fg_gc=XCreateGC(dpy,win,0,0);
-	XAllocColor(dpy,attr.colormap,&fg);
+	GC white_gc=XCreateGC(dpy,win,0,0);
+	XAllocColor(dpy,attr.colormap,&white);
+	
+	XSetForeground(dpy,white_gc,white.pixel);
+	XFlush(dpy);
+	XDrawRectangle(dpy,win,white_gc,x,y,w,h);
+
 	XSetForeground(dpy,fg_gc,fg.pixel);
+	XFlush(dpy);
 
 //	uk_log("Draw text!!!!");
-	x+=w/4;
-	y+=h/2;
-	XDrawString(dpy,win,fg_gc,x,y,txt,strlen(txt));
+
+/* Please, pick one! 
+	char **fonts;
+	int n_fonts;
+	fonts=XListFonts(dpy,"*",2000,&n_fonts);
+	for(int i=0;i<n_fonts;i++){
+		printf("%s\n",fonts[i]);
+	}
+	exit(1);
+	*/
+
+	XDrawString(dpy,win,white_gc,x+w*0.2,y+=h0/2,txt,strlen(txt));
 	XFlush(dpy);
 
 
-/*	SDL_Surface *line = TTF_RenderText_Shaded(font,txt,fg,bg);
+/*	
+	Perhaps you want it in SDL Instead!
+
+	SDL_Surface *line = TTF_RenderText_Shaded(font,txt,fg,bg);
 	if(!line) return;
 	SDL_Rect fontdst={
 				x+(w-line->w)/2,
@@ -495,6 +526,7 @@ void grabkeys(){
 	// Shift, Lock, ctrl
 	unsigned int modifiers=0b100;
 	uk_log("Grabbing keys");
+	/* Of what is going on here. I have genuienly no idea! It just works for me */
 	for(int i=0;i<sizeof(keybindings)/sizeof(event_t);i++){
 //		uk_log("modifiers = 0x%x\n",modifiers);
 		XGrabKey(dpy,keybindings[i].keycode,0,root,False,GrabModeAsync,GrabModeAsync);
