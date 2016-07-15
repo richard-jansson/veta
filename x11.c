@@ -500,14 +500,25 @@ void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
 	int n_fonts;
 	fonts=XListFonts(dpy,"*",2000,&n_fonts);
 	for(int i=0;i<n_fonts;i++){
-		printf("%s\n",fonts[i]);
+//		printf("%s\n",fonts[i]);
+
+		uk_log("font = %s\n",fonts[i]);
 	}
-	exit(1);
-	*/
+u*/
+//j	char *font_name="-misc-fixed-medium-r-normal--18-120-100-100-c-90-iso8859-1";
+//	char *font_name="-adobe-avant garde gothic-book-o-normal--0-0-0-0-p-0-iso8859-1";
+//	char *font_name="-adobe-avantgarde-medium-i-normal--0-0-0-0-p-0-iso8859-1";
+	char *font_name=FONT;
+	Font font=XLoadFont(dpy,font_name);
 
+	XSetFont(dpy,white_gc,font);
+	
 	XDrawString(dpy,win,white_gc,x+w*0.2,y+=h0/2,txt,strlen(txt));
-	XFlush(dpy);
+//	XTextItem ti[]={{txt,strlen(txt),1,font}};
 
+//	XDrawText(dpy,win,white_gc,x+w*0.2,y+=h0/2,,0);
+
+	XFlush(dpy);
 
 /*	
 	Perhaps you want it in SDL Instead!

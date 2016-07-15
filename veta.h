@@ -14,6 +14,9 @@
 
 #define STATE_FILE "veta.state"
 #define LOG_FILE "veta.log"
+#define SYMBOLS_FILE "symbols"
+
+#define  FONT "-misc-fixed-bold-r-normal--18-120-100-100-c-90-iso8859-1"
 
 #define CELL_SIZE 12 
 #define TREE_DEPTH 2

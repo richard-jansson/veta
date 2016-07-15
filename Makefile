@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-g `pkg-config --cflags x11 xtst` -DDEBUG
-LFLAGS=`pkg-config --libs x11 xtst` -lm
+CFLAGS=-g `pkg-config --cflags x11 xtst` -DDEBUG -pg
+LFLAGS=`pkg-config --libs x11 xtst` -lm -pg
 
 SRC=veta.c debug.c x11.c conf.c cell.c color.c 
 OBJ=veta.o debug.o x11.o conf.o cell.o color.o 

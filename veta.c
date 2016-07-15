@@ -111,6 +111,7 @@ int render_cell(cell *cell,void *data){
 
 
 void veta_render(){
+	uk_log("veta_render");
 	box b;
 	b.x0=b.y0=0;
 	b.w=WIDTH;
@@ -124,6 +125,8 @@ int main(int argc,char *argv[]){
 	atexit(veta_exit);
 	debug_init(LOG_FILE);
 
+	symbol_mode=LOAD;
+	symbol_file=SYMBOLS_FILE;
 	for(int i=1;i<argc;i++){
 		if(!strcmp("--dump-symbols",argv[i])){
 			symbol_mode=DUMP;	
