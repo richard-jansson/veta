@@ -71,14 +71,11 @@ int render_cell(cell *cell,void *data){
 //	uk_log("Cell: n=%i children=%i level=%i\n",cell->nchildren,cell->level);
 //	uk_log("render cell level=%i!",cell->level);
 //	uk_log("render at [%i,%i,%i,%i]",b->x0,b->y0,b->w,b->h);
-	int r=random()%255;
-	int g=random()%255;
-	int b=random()%255;
 	assert(cell);
 	if(cell->level>1){
 		if(cell->symbol->name){
 			rgb fg={255,255,255};
-			rgb bg={r,g,b};
+			rgb bg={0,0,0};
 			// FIXME this should handle an arbitrary level
 			int is_selected=cell->selected || (cell->parent && cell->parent->selected);
 			bg=is_selected?cell->color_selected:cell->color;
@@ -93,13 +90,18 @@ int render_cell(cell *cell,void *data){
 	} else {
 //		draw_box(WIDTH,HEIGHT,0,0,0,0,0);
 	}
+		
+	int innerWidth=(ob->w/CELLS_W)*0.9;
+	int innerHeight=(ob->h/CELLS_H)*0.9;
 
-	nb.w=ob->w/CELLS_W;
-	nb.h=ob->h/CELLS_H;
+	nb.w=(ob->w/CELLS_W)*0.9;
+	nb.h=(ob->h/CELLS_H)*0.9;
+	int pleft=0.1*(ob->w/CELLS_W);
+	int ptop=0.1*(ob->h/CELLS_H);
 
 	for(int i=0;i<cell->nchildren;i++){
-		nb.x0=nb.w*(i%CELLS_W)+ob->x0;	
-		nb.y0=nb.h*(i/CELLS_W)+ob->y0;
+		nb.x0=nb.w*(i%CELLS_W)+ob->x0+pleft;	
+		nb.y0=nb.h*(i/CELLS_W)+ob->y0+ptop;
 //		uk_log("%i,%i",nb.x0,nb.y0);
 		
 		render_cell(cell->children[i],&nb);

@@ -162,7 +162,7 @@ void ui_loop(){
 				break;
 			case DestroyNotify:
 				uk_log("destroy window");
-				uk_log("subwindow = %i\n",ev.subwindow);
+//				uk_log("subwindow = %i\n",ev.subwindow);
 				//  Destroy notify here makes the program close whenever you open 
 				// A new window on my machine. Wonder why?
 //				running=0;
@@ -474,13 +474,13 @@ void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
 	assert(txt);
 
 	int x0,y0,w0,h0;
-	x0=x+w*0.1;
-	y0=y+h*0.1;
-	w0=w*0.8;
-	h0=h*0.7;
+	x0=x;
+	y0=y;
+	w0=w;
+	h0=h;
 
-//	draw_box(w,h,x,y,c2.r,c2.g,c2.b);
-	draw_box(w0,h0,x0,y0,c2.r,c2.g,c2.b);
+	draw_box(w,h,x,y,c2.r,c2.g,c2.b);
+//	draw_box(w0,h0,x0,y0,c2.r,c2.g,c2.b);
 
 	GC fg_gc=XCreateGC(dpy,win,0,0);
 	GC white_gc=XCreateGC(dpy,win,0,0);
