@@ -119,6 +119,12 @@ void veta_render(){
 //	recurse_cells(root,render_cell,&b);
 	draw_box(WIDTH,HEIGHT,0,0,0,0,0);
 	render_cell(root,&b);
+
+	render_ui2();
+}
+
+void veta_click(x,y){
+	ui2_handle_click(x,y);
 }
 
 int main(int argc,char *argv[]){
@@ -148,12 +154,16 @@ int main(int argc,char *argv[]){
 
 	// Set up callbacks 
 	ui_onevent(veta_handleevent);
+	ui_onclick(veta_click);
+
 	ui_haskeymap(veta_symbolsloaded);
 	ui_render(veta_render);
 
 //	set_draw_text_box(r_render_cell);
 
 	ui_init(WIDTH,HEIGHT,st->x,st->y);
+
+	ui2_init();
 
 	ui_loop();
 	return 1;

@@ -51,3 +51,6 @@ extern char *symbol_file;
 typedef enum  {NONE,LOAD,DUMP} smode_t;
 extern smode_t symbol_mode;
 
+
+/*  UI */
+

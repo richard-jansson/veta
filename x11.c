@@ -11,6 +11,12 @@
 
 #define FORMAT "%s %i %i %i\n"
 
+int winX=0,winY=0;
+int lastMX=0,lastMY=0;
+void get_last_click(int *x,int *y){
+	*x=lastMX;
+	*y=lastMY;
+}
 /* Global variables */
 FILE *sym_file=NULL;
 
@@ -34,6 +40,7 @@ event_t *_get_event_from_keycode(int keycode);
 
 /* Callback functions / Events */
 void (*onevent)(event_t *ev);
+void (*onclick)(int x,int y);
 void (*onhaskeymap)(symbol *symbols,int n);
 void (*onrender)();
 /* End of callback funtions */ 
@@ -42,6 +49,11 @@ void (*onrender)();
 void ui_onevent(void(*callback)(event_t *ev)){
 	onevent=callback;	
 }
+
+void ui_onclick(void(*callback)(int x,int y)){
+	onclick=callback;
+}
+
 
 void ui_haskeymap(void(*callback)(symbol *symbols,int n)){
 	onhaskeymap=callback;
@@ -153,6 +165,13 @@ void ui_loop(){
 	while(running){
 		XNextEvent(dpy,&ev);
 		switch(ev.type){
+			case ButtonRelease:
+			case ButtonPress:
+				uk_log("ButtonEvent!!");
+				lastMX=ev.xbutton.x;
+				lastMY=ev.xbutton.y;
+				onclick(lastMX-winX,lastMY-winY);
+				break;
 			case KeyRelease:
 				uk_log("KeyRelease %i",ev.xkey.keycode);
 				v_event=_get_event_from_keycode(ev.xkey.keycode);
@@ -180,6 +199,9 @@ void ui_loop(){
 			case ConfigureNotify:
 				// Let's start out with window
 				for(Window cwin=win; cwin != 0; cwin=parent){
+				// I'm sure this is cheating!
+					winX=ev.xconfigure.x;
+					winY=ev.xconfigure.y;
 					XQueryTree(dpy,cwin,&root_return,&parent,&children_return,&n_children);
 					if(parent == root){
 						XWindowAttributes attr;
@@ -418,6 +440,11 @@ void _grabkeys(){
 //		XGrabKey(dpy,keybindings[i].keycode,8,root,False,GrabModeAsync,GrabModeAsync);
 //		XGrabKey(dpy,keybindings[i].keycode,16,root,False,GrabModeAsync,GrabModeAsync);
 	}
+
+// Shouldn't be here 
+// if it is function must be renamed
+	XGrabButton(dpy,0,0,root,False, 0x0,GrabModeAsync,GrabModeAsync,None,None);
+
 	XFlush(dpy);
 }
 void _ungrabkeys(){
