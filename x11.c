@@ -89,7 +89,7 @@ XSetWindowAttributes attr ;
 int screen;
 GC       gc;
 XVisualInfo visualinfo ;
-Window win=0,root,parent=0;
+Window win=0,root,win_parent=0;
 int x,y,_w,_h;
 int lastX=0,lastY=0;
 int running=1;
@@ -106,6 +106,9 @@ void ui_quit(){
 void ui_init(int w,int h,int x,int y){
 	_w=w;
 	_h=h;
+	winX=x;
+	winY=y;
+	
 	dpy=XOpenDisplay("");
 	screen=DefaultScreen(dpy);
 	root=DefaultRootWindow(dpy);
@@ -157,20 +160,52 @@ void ui_init(int w,int h,int x,int y){
 	_grabkeys();
 }
 
+void get_win_pos(Window *win,int *x,int *y){
+	int X=0;
+	int Y=0;
+	int i=0;
+	unsigned int n_children;
+	Window root_return,*children_return,parent;
+	
+	for(Window cwin=win; cwin != 0; cwin=parent){
+				// I'm sure this is cheating!
+					XQueryTree(dpy,cwin,&root_return,&parent,&children_return,&n_children);
+
+
+					// Don't ask. This is pure magic!
+					// Probably it only works on Ubuntu
+					// there are for some 2 windows around my window 
+					// until I can see the  actual position of the window. 
+					// Milage may vary. 
+						XWindowAttributes attr;
+						XGetWindowAttributes(dpy,cwin,&attr);
+						X+=attr.x; 
+						Y+=attr.y;
+					i++;
+		}
+
+		*x=X;
+		*y=Y;
+}
+
 void ui_loop(){
-	Window root_return,parent,*children_return;
+	Window root_return,*children_return,parent;
 	unsigned int n_children;
 	XEvent ev;
 	event_t *v_event;
+	int i;
+	XWindowAttributes winattr;
+	int x,y;
 	while(running){
 		XNextEvent(dpy,&ev);
 		switch(ev.type){
 			case ButtonRelease:
 			case ButtonPress:
-				uk_log("ButtonEvent!!");
 				lastMX=ev.xbutton.x;
 				lastMY=ev.xbutton.y;
-				onclick(lastMX-winX,lastMY-winY);
+				get_win_pos(win,&x,&y);
+				//  112 just because ... 
+				onclick(lastMX-x-112,lastMY-y);
 				break;
 			case KeyRelease:
 				uk_log("KeyRelease %i",ev.xkey.keycode);
@@ -194,22 +229,35 @@ void ui_loop(){
 				break;
 			case ReparentNotify:
 				uk_log("Reparent win=%x par=%x",ev.xreparent.window,ev.xreparent.parent);
-				parent=ev.xreparent.parent;
+				if(ev.xreparent.parent!=0){	
+					win_parent=ev.xreparent.parent;
+				}
 				break;
 			case ConfigureNotify:
+				get_win_pos(win,&lastX,&lastY);
 				// Let's start out with window
+/*				i=0;	
 				for(Window cwin=win; cwin != 0; cwin=parent){
 				// I'm sure this is cheating!
 					winX=ev.xconfigure.x;
 					winY=ev.xconfigure.y;
 					XQueryTree(dpy,cwin,&root_return,&parent,&children_return,&n_children);
-					if(parent == root){
+
+
+					// Don't ask. This is pure magic!
+					// Probably it only works on Ubuntu
+					// there are for some 2 windows around my window 
+					// until I can see the  actual position of the window. 
+					// Milage may vary. 
+					if(i ==  2){
 						XWindowAttributes attr;
 						XGetWindowAttributes(dpy,cwin,&attr);
 						lastX=attr.x; lastY=attr.y;
-						uk_log("window frame %x has pos (%i,%i)",lastX,lastY);
+						uk_log("windows moved to (%i,%i)",lastX,lastY);
 					}
+					i++;
 				}
+				*/
 				break;
 		}
 	}	

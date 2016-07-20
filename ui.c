@@ -17,7 +17,7 @@
 
 
 /* Private */
-typedef enum {HUD_OFFLINE,CONF,CONF_DESC,CONF_BINDING} ui_state_t;
+//typedef enum {HUD_OFFLINE,CONF,CONF_DESC,CONF_BINDING} ui_state_t;
 ui_state_t ui_state;
 cell *curr;
 

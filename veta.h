@@ -1,3 +1,5 @@
+#include "ui2.h"
+
 #define SCALE 1
 
 #define ASPECT_HOR 800
@@ -54,3 +56,4 @@ extern smode_t symbol_mode;
 
 /*  UI */
 
+extern ui_state_t ui_state;

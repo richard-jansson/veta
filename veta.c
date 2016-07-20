@@ -40,6 +40,7 @@ void veta_handleevent(event_t *event){
 		case RESET:
 			uk_log("Reset");
 			clear_selection(root);
+			ui_state=HUD_OFFLINE;
 			veta_render();
 			break;
 		case SELECT_CELL:
