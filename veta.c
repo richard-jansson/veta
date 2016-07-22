@@ -155,7 +155,8 @@ int main(int argc,char *argv[]){
 
 	// Set up callbacks 
 	ui_onevent(veta_handleevent);
-	ui_onclick(veta_click);
+	ui_onclick(ui2_handle_click);
+	ui_onrelease(ui2_handle_release);
 
 	ui_haskeymap(veta_symbolsloaded);
 	ui_render(veta_render);

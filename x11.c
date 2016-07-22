@@ -41,6 +41,7 @@ event_t *_get_event_from_keycode(int keycode);
 /* Callback functions / Events */
 void (*onevent)(event_t *ev);
 void (*onclick)(int x,int y);
+void (*onrelease)(char *symbol,int *propagate);
 void (*onhaskeymap)(symbol *symbols,int n);
 void (*onrender)();
 /* End of callback funtions */ 
@@ -52,6 +53,10 @@ void ui_onevent(void(*callback)(event_t *ev)){
 
 void ui_onclick(void(*callback)(int x,int y)){
 	onclick=callback;
+}
+
+void ui_onrelease(void(*callback)(char *s,int *p)){
+	onrelease=callback;
 }
 
 
@@ -196,6 +201,11 @@ void ui_loop(){
 	int i;
 	XWindowAttributes winattr;
 	int x,y;
+	int propagate;
+	char keydown[16];
+	KeySym keysym_ret;
+	XComposeStatus status_in_out;
+
 	while(running){
 		XNextEvent(dpy,&ev);
 		switch(ev.type){
@@ -203,12 +213,21 @@ void ui_loop(){
 			case ButtonPress:
 				lastMX=ev.xbutton.x;
 				lastMY=ev.xbutton.y;
-				get_win_pos(win,&x,&y);
+					// Since we're grabbing on win and not root we don't need to subtract this.
+//				get_win_pos(win,&x,&y);
 				//  112 just because ... 
-				onclick(lastMX-x-112,lastMY-y);
+//				onclick(lastMX-x-112,lastMY-y);
+				onclick(lastMX,lastMY);
 				break;
 			case KeyRelease:
 				uk_log("KeyRelease %i",ev.xkey.keycode);
+				XLookupString(&ev,keydown,16,&keysym_ret,&status_in_out);
+				onrelease(keydown,&propagate);
+				uk_log("propagate = %i",propagate);
+				propagate=1;
+				if(!propagate) break;
+
+				uk_log("event propagated");
 				v_event=_get_event_from_keycode(ev.xkey.keycode);
 				onevent(v_event);
 				onrender();
@@ -474,6 +493,13 @@ int _get_keycode_count(KeySym *keymap,int min,int max,int keysyms_per_keycode){
 	max_keysyms=count_keysyms;
 	return count_keysyms;
 }
+
+// Grab all keys 
+void grab_keyboard(){
+	uk_log("grabbed complete keyboard for win!");
+	XGrabKeyboard(dpy,win,0,GrabModeAsync,GrabModeAsync,CurrentTime);
+}
+
 void _grabkeys(){
 	Window root = DefaultRootWindow(dpy);
 	// Shift, Lock, ctrl
@@ -491,7 +517,7 @@ void _grabkeys(){
 
 // Shouldn't be here 
 // if it is function must be renamed
-	XGrabButton(dpy,0,0,root,False, 0x0,GrabModeAsync,GrabModeAsync,None,None);
+	XGrabButton(dpy,0,0,win,False, 0x0,GrabModeAsync,GrabModeAsync,None,None);
 
 	XFlush(dpy);
 }
@@ -607,6 +633,10 @@ u*/
 				line->h};
 	SDL_BlitSurface(line,NULL,window,&fontdst); */
 }
+
+void grabkeyboard(){
+}
+
 void grabkeys(){
 	Window root = DefaultRootWindow(dpy);
 	// Shift, Lock, ctrl

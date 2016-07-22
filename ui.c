@@ -15,11 +15,66 @@
 #include "cell.h"
 #include "debug.h"
 
+typedef struct {
+	int x,y,w,h;
+	rgb bg,fg;
+	int visible; // Visible means focus?? 
+	void *onclick;
+	void *onrelease;
+	void *draw; // draw function 	
+	char *label;
+} widget_t;
+
+typedef int widget;
+
+widget w_configure,w_select;
+
+widget_t **widgets;
+int n_widgets=0;
+
+void standard_onrelease(widget_t *this){
+}
+void standard_click(widget_t *this){
+	uk_log("[%s] clicked",this->label);
+}
+
+void standard_draw(widget_t *this,int x,int y,int w,int h){
+	uk_log("s draw!");
+	draw_text_box(this->label,w,h,x,y,this->fg,this->bg);	
+}
+
+widget add_widget(char *label,
+				void(*draw)(widget_t *this,int x,int y,int w,int h),
+				void(*onclick)(widget_t *w),
+				void(*onrelease)(widget_t *w)
+				)
+{
+	int n=n_widgets;
+	rgb white=(rgb){255,255,255};
+
+	widgets=realloc(widgets,sizeof(widget_t*)*(n+1));
+	
+	widgets[n]=malloc(sizeof(widget_t));
+	widgets[n]->bg=get_color(n,0);
+	widgets[n]->fg=white;
+
+	widgets[n]->label=label;
+	widgets[n]->onrelease=onrelease?onrelease:standard_onrelease;
+	widgets[n]->draw=draw?draw:standard_draw;
+	widgets[n]->onclick=onclick?onclick:standard_click;
+	
+	n_widgets++;
+	return (widget)n;
+}
 
 /* Private */
 //typedef enum {HUD_OFFLINE,CONF,CONF_DESC,CONF_BINDING} ui_state_t;
 ui_state_t ui_state;
 cell *curr;
+
+
+char *conf_desc="Hello world";
+int keyboard_grabbed=0;
 
 typedef struct box_t {
 	int w,h;
@@ -33,7 +88,7 @@ box_t **boxes;
 int n_boxes=0;
 
 extern int lastMX,lastMY;
-
+/*
 int add_box(int w,int h,int x,int y,ui_state_t s1,ui_state_t s2){
 	int n=n_boxes;
 	boxes=realloc(boxes,sizeof(box_t*)*(n+1));
@@ -50,32 +105,24 @@ int add_box(int w,int h,int x,int y,ui_state_t s1,ui_state_t s2){
 
 	n_boxes++;
 }
+*/
 
-int intersect(i,x,y){
-	box_t *b=boxes[i];
+int test_intersect(int i,int x,int y){
+	widget_t *b=widgets[i];
 	uk_log("{%i,%i,%i,%i} vs (%i,%i)\n",b->x,b->y,b->x+b->w,b->y+b->h,x,y);
-	if( x < boxes[i]->x ) return 1;
-	if( y < boxes[i]->y ) return 2;
-	if( x > (boxes[i]->x+boxes[i]->w)) return 3;
-	if( y > (boxes[i]->y+boxes[i]->h)) return 4;
+	if( x < b->x ) return 1;
+	if( y < b->y ) return 2;
+	if( x > (b->x+b->w)) return 3;
+	if( y > (b->y+b->h)) return 4;
 	return 0;
 }
 
-void ui2_handle_click(int x,int y){
-	for(int i=0;i<n_boxes;i++){
-		if(boxes[i]->current_state != ui_state) continue;
-		int r=intersect(i,x,y);
-		printf("%i",r);
-		// A click event is blocked by the element
-		if(!r){
-			uk_log("box %i is hit! Going to state: %i",i,boxes[i]->next_state);
-			ui_state = boxes[i]->next_state;
-			render_ui2();
-			return;
-		}
-	}
-	
+
+void ui2_handle_release(char *s,int *propagate){
+	*propagate=ui_state!=CONF_DESC && ui_state!=CONF_BINDING; 
+	uk_log("UI2 got release %s",s);
 }
+
 
 void draw_normal(){
 	uk_log("draw_normal");
@@ -104,31 +151,95 @@ void draw_conf(){
 }
 
 void draw_conf_desc(){
+	if( keyboard_grabbed == 0) {
+//		grab_keyboard();
+	}
+	rgb c1=get_color(0,0);
+	rgb c2=get_color(1,0);
+	int w=WIDTH;
+	int h=HEIGHT;
+	int qw=WIDTH/4,qh=HEIGHT/4;
+	rgb white=(rgb){255,255,255};
+	w=qw*2;
+	h=qh*2;
+	draw_text_box(conf_desc,w,h/2,qw,qh,white,c1);
+	draw_text_box("OK",qw/2,h/2,qw+w,qh,white,c2);
 }
 void draw_conf_binding(){
 }
 
 void *draw_functions[]={draw_normal,draw_conf,draw_conf_desc,draw_conf_binding};
 
-void ui2_init(){
+void ui2_init_old(){
 	ui_state=HUD_OFFLINE;
 
-	boxes=(box_t**)malloc(sizeof(box_t*)*(n_boxes+1));
+	widgets=(widget_t**)malloc(sizeof(widget_t*)*(n_widgets+1));
 
 	int w=WIDTH;
 	int h=HEIGHT;
-	add_box(w/8,h/16,w-w/8-w/16,h-h/16-h/32,HUD_OFFLINE,CONF);
 
 	int qw=WIDTH/4,qh=HEIGHT/4;
 	w=qw*2;
 	h=qh*2;
 
-	add_box(w,h/2,qw,qh, CONF,CONF_DESC);
-	add_box(w,h/2,qw,qh+h/2,CONF,CONF_BINDING);
+
 }
 
+void ui2_handle_click(int mx,int my){
+	void (*f)(widget_t *this);
+	int w=WIDTH/8;
+	int h=HEIGHT/16; 
+	int x=WIDTH-w; 
+	int y=HEIGHT-h;
+
+	uk_log("click");
+	for(int i=0;i<n_widgets;i++) {
+		if(widgets[i]->visible ){
+			uk_log("%i is visible (%i,%i) (%i,%i,%i,%i)",i,mx,my,x,y,w,h);
+			if( mx < x ) break;
+			if( my < y ) break;
+			if( mx > x + w ) break;
+			if( my > y + h ) break;
+			f=widgets[i]->onclick;
+			f(widgets[i]);
+		}
+		y-=h;
+	}
+}
 void render_ui2(){
-	void (*draw)(void);
-	draw=draw_functions[ui_state];
-	draw();
+	uk_log("render ui2");
+	void (*f)(widget_t *this,int x,int y,int w,int h);
+
+	int w=WIDTH/8;
+	int h=HEIGHT/16;
+	int x0=WIDTH-w;
+	int y0=HEIGHT-h;
+	for(int i=0;i<n_widgets;i++) {
+		if(widgets[i]->visible ){
+			f=widgets[i]->draw;
+			f(widgets[i],x0,y0,w,h);
+			y0-=h;
+		}
+	}
+}
+
+
+void configure_click(widget_t *this){
+	widget_set_visible(w_configure,0);
+	widget_set_visible(w_select,1);
+
+	render_ui2();
+}
+
+void ui2_init(){
+	widgets=(widget_t**)malloc(sizeof(widget_t*)*(n_widgets+1));
+
+	w_configure=add_widget("Configure",NULL,configure_click,NULL);
+	w_select=add_widget("Select cell",NULL,NULL,NULL);
+
+	widget_set_visible(w_configure,1);
+}
+
+void widget_set_visible(widget w,int v){
+	widgets[w]->visible = v;
 }

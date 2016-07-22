@@ -57,3 +57,8 @@ extern smode_t symbol_mode;
 /*  UI */
 
 extern ui_state_t ui_state;
+
+void ui2_handle_click(int x,int y);
+void ui2_handle_release(char *s,int *propagate);
+
+void ui_onrelase(void(*callback)(char *s,int *p));
