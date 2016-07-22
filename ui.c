@@ -12,8 +12,8 @@
 #include<stdlib.h>
 
 #include"veta.h"
-#include "cell.h"
 #include "debug.h"
+
 
 typedef struct {
 	int x,y,w,h;
@@ -26,6 +26,9 @@ typedef struct {
 } widget_t;
 
 typedef int widget;
+
+void widget_set_visible(widget w,int v);
+
 
 widget w_configure,w_select;
 
@@ -223,6 +226,10 @@ void render_ui2(){
 	}
 }
 
+void widget_set_visible(widget w,int v){
+	widgets[(int)w]->visible=v?1:0;
+}
+
 
 void configure_click(widget_t *this){
 	widget_set_visible(w_configure,0);
@@ -240,6 +247,3 @@ void ui2_init(){
 	widget_set_visible(w_configure,1);
 }
 
-void widget_set_visible(widget w,int v){
-	widgets[w]->visible = v;
-}

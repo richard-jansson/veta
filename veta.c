@@ -4,7 +4,6 @@
 #include "veta.h"
 
 #include "debug.h"
-#include "cell.h"
 #include "keyboard_io.h"
 #include "ui.h"
 #include "conf.h"
@@ -122,10 +121,6 @@ void veta_render(){
 	render_cell(root,&b);
 
 	render_ui2();
-}
-
-void veta_click(x,y){
-	ui2_handle_click(x,y);
 }
 
 int main(int argc,char *argv[]){

@@ -1,13 +1,16 @@
 #include<assert.h>
 #include<string.h>
+#include<stdio.h>
 
 #include<X11/Xlib.h>
 #include<X11/Xutil.h>
 
+#include<X11/extensions/XTest.h>
+
 #include "keyboard_io.h"
-#include"debug.h"
+#include "debug.h"
 #include "veta.h"
-#include "cell.h"
+
 
 #define FORMAT "%s %i %i %i\n"
 
@@ -25,7 +28,6 @@ FILE *sym_file=NULL;
 /* Private functions */
 void _set_on_top(Display *dpy,Window window);
 void _make_borderless(Display *dpy,Window win);
-void draw_box(int w,int h,int x,int y,int r,int g,int b);
 XColor _rgb2XColor(int r,int g,int b);
 void _setupkeymap();
 int _already_used(char *s);
@@ -33,9 +35,11 @@ int _is_modifier(KeyCode kc);
 void _add_unique(char *s,KeySym ks,int mod,KeyCode keycode);
 int _get_keycode_count(KeySym *keymap,int min,int max,int keysyms_per_keycode);
 void _grabkeys();
+void grabkeys();
 void _ungrabkeys();
-void draw_text_box(char *txt,int w,int h,int x,int y,rgb fg,rgb bg);
+void ungrabkeys();
 event_t *_get_event_from_keycode(int keycode);
+void _set_sticky(Display *dpy,Window window);
 /* End of private functions */
 
 /* Callback functions / Events */
@@ -424,7 +428,7 @@ void _setupkeymap(){
 			if(*line=='#') continue;
 			char name[128];
 			int ks,mod,keycode;
-			sscanf(line,FORMAT,&name,&ks,&mod,&keycode);
+			sscanf(line,FORMAT,(char*)&name,&ks,&mod,&keycode);
 			uk_log(FORMAT,name,ks,mod,keycode);
 			_add_unique(name,ks,mod,keycode);
 		}

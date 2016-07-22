@@ -1,3 +1,5 @@
+/* FIXME: Before including veta.h you have to include cell.h not sure if this makes sense */
+#include "cell.h"
 #include "ui2.h"
 
 #define SCALE 1
@@ -7,8 +9,6 @@
 
 #define FONT_SIZE  48* SCALE
 
-#define WIDTH ASPECT_HOR * SCALE	
-#define HEIGHT ASPECT_VER * SCALE
 #define WIDTH 800
 #define HEIGHT 600
 
@@ -55,10 +55,21 @@ extern smode_t symbol_mode;
 
 
 /*  UI */
-
+void draw_text_box(char *txt,int w,int h,int x,int y,rgb fg,rgb bg);
+void draw_box(int w,int h,int x,int y,int r,int g,int b);
 extern ui_state_t ui_state;
+void ui_onclick(void(*callback)(int x,int y));
+void ui_onrelease(void(*callback)(char *s,int *p));
 
+/* UI lvl 2 */ 
+void render_ui2();
 void ui2_handle_click(int x,int y);
 void ui2_handle_release(char *s,int *propagate);
-
+void ui2_init();
 void ui_onrelase(void(*callback)(char *s,int *p));
+
+/* VETA */ 
+void veta_render();
+
+/* Conf  */
+void writestate(char *path,int x,int y);
