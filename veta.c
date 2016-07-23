@@ -113,15 +113,21 @@ void veta_render(){
 	draw_box(WIDTH,HEIGHT,0,0,0,0,0);
 	render_cell(root,&b);
 
+
 	render_ui2();
+#ifdef DEBUG
+	rgb black=(rgb){0,0,0};
+	rgb white=(rgb){0xff,0xff,0xff};
+	draw_text_box(BUILD,650,40,20,HEIGHT-45,black,black);
+#endif
 }
 
 void veta_click(int x,int y){
 }
 
 int main(int argc,char *argv[]){
-	atexit(veta_exit);
 	debug_init(LOG_FILE);
+	uk_log("build: %s",BUILD);
 
 	symbol_mode=LOAD;
 	symbol_file=SYMBOLS_FILE;

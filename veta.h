@@ -1,3 +1,4 @@
+#include "ver.h"
 /* FIXME: Before including veta.h you have to include cell.h not sure if this makes sense */
 #include "cell.h"
 #include "ui2.h"
