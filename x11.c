@@ -45,7 +45,7 @@ void _set_sticky(Display *dpy,Window window);
 /* Callback functions / Events */
 void (*onevent)(event_t *ev);
 void (*onclick)(int x,int y);
-void (*onrelease)(char *symbol,int *propagate);
+void (*onrelease)(char *symbol,int *propagate,vkey key);
 void (*onhaskeymap)(symbol *symbols,int n);
 void (*onrender)();
 /* End of callback funtions */ 
@@ -210,6 +210,8 @@ void ui_loop(){
 	KeySym keysym_ret;
 	XComposeStatus status_in_out;
 
+	vkey key=ANY;
+
 	while(running){
 		XNextEvent(dpy,&ev);
 		switch(ev.type){
@@ -222,8 +224,13 @@ void ui_loop(){
 				break;
 			case KeyRelease:
 				uk_log("KeyRelease %i",ev.xkey.keycode);
+				
+				if(ev.xkey.keycode==22) key=BACKSPACE;
+				else if(ev.xkey.keycode==36) key=ENTER;
+				else key=ANY;
+
 				XLookupString(&ev,keydown,16,&keysym_ret,&status_in_out);
-				onrelease(keydown,&propagate);
+				onrelease(keydown,&propagate,key);
 				uk_log("propagate = %i",propagate);
 				if(!propagate) break;
 

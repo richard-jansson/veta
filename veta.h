@@ -55,6 +55,8 @@ extern smode_t symbol_mode;
 
 
 /*  UI */
+typedef enum {BACKSPACE,ENTER,ANY} vkey; 
+
 void draw_text_box(char *txt,int w,int h,int x,int y,rgb fg,rgb bg);
 void draw_box(int w,int h,int x,int y,int r,int g,int b);
 //extern ui_state_t ui_state;
@@ -64,7 +66,7 @@ void ui_onrelease(void(*callback)(char *s,int *p));
 /* UI lvl 2 */ 
 void render_ui2();
 void ui2_handle_click(int x,int y);
-void ui2_handle_release(char *s,int *propagate);
+void ui2_handle_release(char *s,int *propagate,vkey key);
 void ui2_init();
 void ui_onrelase(void(*callback)(char *s,int *p));
 
@@ -73,3 +75,5 @@ void veta_render();
 
 /* Conf  */
 void writestate(char *path,int x,int y);
+
+

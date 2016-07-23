@@ -20,7 +20,7 @@ void widget_set_visible(widget w,int v);
 widget_t **widgets;
 int n_widgets=0;
 
-void standard_onrelease(widget_t *this,char *s,int *propagate){
+void standard_onrelease(widget_t *this,char *s,int *propagate,vkey key){
 	*propagate=1;
 	uk_log("keypress sent to widget ... ignoring ...");
 }
@@ -52,7 +52,7 @@ void text_draw(widget_t *this,int x0,int y0,int w0,int h0){
 widget add_widget(char *label,
 				void(*draw)(widget_t *this,int x,int y,int w,int h),
 				void(*onclick)(widget_t *w),
-				void(*onrelease)(widget_t *w,char *s,int *p)
+				void(*onrelease)(widget_t *w,char *s,int *p,vkey key)
 				)
 {
 	int n=n_widgets;
@@ -108,14 +108,14 @@ int test_intersect(int i,int x,int y){
 }
 
 
-void ui2_handle_release(char *s,int *propagate){
-	void (*f)(widget_t *this,char *,int *);
+void ui2_handle_release(char *s,int *propagate,vkey key){
+	void (*f)(widget_t *this,char *,int *,vkey key);
 	int p;
 	uk_log("UI2 got release %s",s);
 	for(int i=0;i<n_widgets;i++) {
 		if(widgets[i]->visible ){
 			f=widgets[i]->onrelease;
-			f(widgets[i],s,&p);
+			f(widgets[i],s,&p,key);
 			if(!p){
 				uk_log("do not propagate!!");
 				*propagate=0;

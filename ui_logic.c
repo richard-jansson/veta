@@ -1,9 +1,6 @@
-
 /* This is the logic for the ui. So ui is library / helper functions for the 
   graphical user interface. And this would be what acctually does things. */
-
 #include <stdlib.h>
-
 #include "veta.h"
 
 #include "debug.h"
@@ -11,8 +8,7 @@
 // Our state 
 int selectcell=0;
 symbol *selected;
-
-
+char *label=NULL;
 
 // Our widgets
 widget w_configure;
@@ -21,6 +17,29 @@ widget w_description,w_binding;
 widget w_label;
 
 cell *curr;
+
+char *string_clear(char *s){
+	if(s) free(s);
+	s=malloc(1);
+	*s='\0';
+	return s;
+}
+
+char *string_append(char *s,char *appendix){
+	int l=strlen(s)+strlen(appendix);
+
+	s=realloc(s,l);
+	strcat(s,appendix);
+	
+	return  s;
+}
+
+char *string_backspace(char *s){
+	int l=strlen(s);
+	if(l==0) return s;
+	s[l-1]='\0';
+	return s;
+}
 
 // Click on configure -> Go to select cell
 void configure_click(widget_t *this){
@@ -64,9 +83,15 @@ void desc_click(widget *this){
 }
 
 
-void label_onrelease(widget_t *this,char *s,int *propagate){
+void label_onrelease(widget_t *this,char *s,int *propagate,vkey  key){
+	if( key  == BACKSPACE) {
+		label=string_backspace(label);
+		selected->name=label;
+//		render_ui2();
+		return;	
+	}
 // To get enter or escape or whatever
-	if(!isprint(*s)) {
+	if(!isprint(*s) || key == ENTER) {
 		ungrabkeyboard();
 
 // Back to S. III
@@ -74,8 +99,13 @@ void label_onrelease(widget_t *this,char *s,int *propagate){
 
 		widget_set_visible(w_description,1);
 		widget_set_visible(w_binding,1);
+		render_ui2();
 		return;
 	}
+
+	label=string_append(label,s);
+	selected->name=label;
+	render_ui2();
 	
 // Stop the signal from propagating, we're eating this!
 	*propagate=0;
@@ -90,6 +120,7 @@ void label_onrelease(widget_t *this,char *s,int *propagate){
 */
 
 void ui2_add_widgets(){
+	label=string_clear(label);
 // I 
 	w_configure=add_widget("Configure",NULL,configure_click,NULL);
 
@@ -103,7 +134,7 @@ void ui2_add_widgets(){
 	w_binding=add_widget("Binding",NULL,NULL,NULL);
 
 // IV 
-	w_label=add_widget("Label",text_draw,NULL,label_onrelease);
+	w_label=add_widget(label,text_draw,NULL,label_onrelease);
 
 	widget_set_visible(w_configure,1);
 }

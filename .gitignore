@@ -4,3 +4,5 @@ veta
 *.o
 veta.log
 veta.state
+commit_msg
+gmon.out

@@ -8,8 +8,11 @@
 //key *currentkey,*selected_key;
 symbol *current_symbol,*selected_symbol;
 cell *deepest_selected_cell=NULL;
+
 int prev_lvl_selected=-1;
 int max_symbols=0,symbols_added=0;
+
+int cell_id = 0;
 
 cell *create_recurse(int lvl,int cellsizen,int depth,int childn,cell *parent){
 	int cellsize=CELLS_W*CELLS_H;
@@ -25,7 +28,6 @@ cell *create_recurse(int lvl,int cellsizen,int depth,int childn,cell *parent){
 	curr->parent=parent;
 
 	if(lvl==depth){
-		// out of keys
 		// TODO this isn't really right
 		if(symbols_added == max_symbols){
 			free(curr);
