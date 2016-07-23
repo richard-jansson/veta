@@ -49,7 +49,8 @@ void done_click(widget_t *this){
 	widget_set_visible(w_description,0);
 	widget_set_visible(w_binding,0);
 	widget_set_visible(w_done,0);
-
+	
+	selected=NULL;
 }
 
 // Click on configure -> Go to select cell
@@ -92,6 +93,16 @@ void desc_click(widget *this){
 	widget_set_visible(w_binding,0);
 
 	widget_set_visible(w_label,1);
+
+// move name to label, that we work on
+	if(selected->name){
+		if(label) free(label);
+		label=malloc(strlen(selected->name));
+		*label='\0';
+		strcat(label,selected->name);
+	}
+//	label=selected->name;
+
 	grabkeyboard();
 }
 
@@ -135,8 +146,6 @@ void map_onrelease(widget_t *this,char *s,int *propagate,vkey  key,void *pspecif
 void label_onrelease(widget_t *this,char *s,int *propagate,vkey  key,void *pspecific){
 	if( key  == BACKSPACE) {
 		label=string_backspace(label);
-		selected->name=label;
-//		render_ui2();
 		return;	
 	}
 // To get enter or escape or whatever
@@ -148,12 +157,25 @@ void label_onrelease(widget_t *this,char *s,int *propagate,vkey  key,void *pspec
 
 		widget_set_visible(w_description,1);
 		widget_set_visible(w_binding,1);
+
+
+// I hate C from the bottom of my heart, the subtle bugs created by this 
+// ancient beast creeps in in early stages of development. Just like a 
+// a Succubus it leads you to believe you've done something clever and nice,
+// while you in fact sawed your fucking leg of.
+		if(selected->name) {
+			free(selected->name);
+		}
+		selected->name=malloc(strlen(selected->name)+1);
+		selected->name[0]='\0';
+		strcat(selected->name,label);
+
 		render_ui2();
 		return;
 	}
 
 	label=string_append(label,s);
-	selected->name=label;
+
 	render_ui2();
 	
 // Stop the signal from propagating, we're eating this!
