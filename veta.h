@@ -57,7 +57,7 @@ extern smode_t symbol_mode;
 /*  UI */
 void draw_text_box(char *txt,int w,int h,int x,int y,rgb fg,rgb bg);
 void draw_box(int w,int h,int x,int y,int r,int g,int b);
-extern ui_state_t ui_state;
+//extern ui_state_t ui_state;
 void ui_onclick(void(*callback)(int x,int y));
 void ui_onrelease(void(*callback)(char *s,int *p));
 

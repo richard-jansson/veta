@@ -15,27 +15,14 @@
 #include "debug.h"
 
 
-typedef struct {
-	int x,y,w,h;
-	rgb bg,fg;
-	int visible; // Visible means focus?? 
-	void *onclick;
-	void *onrelease;
-	void *draw; // draw function 	
-	char *label;
-} widget_t;
-
-typedef int widget;
-
 void widget_set_visible(widget w,int v);
-
-
-widget w_configure,w_select;
 
 widget_t **widgets;
 int n_widgets=0;
 
-void standard_onrelease(widget_t *this){
+void standard_onrelease(widget_t *this,char *s,int *propagate){
+	*propagate=1;
+	uk_log("keypress sent to widget ... ignoring ...");
 }
 void standard_click(widget_t *this){
 	uk_log("[%s] clicked",this->label);
@@ -46,10 +33,26 @@ void standard_draw(widget_t *this,int x,int y,int w,int h){
 	draw_text_box(this->label,w,h,x,y,this->fg,this->bg);	
 }
 
+// Text draw don't give two cent about your coordinates
+// He'll live on the center of attention or he'll die 
+// trying.
+void text_draw(widget_t *this,int x0,int y0,int w0,int h0){
+	int x,y,w,h;
+	w=WIDTH/2;
+	h=HEIGHT/10;
+	x=(WIDTH-w)/2;
+	y=(HEIGHT-h)/2;
+	draw_text_box(this->label,w,h,x,y,this->fg,this->bg);	
+
+	uk_log("draw text box\n");
+}
+
+
+// By default the widgets are invisible
 widget add_widget(char *label,
 				void(*draw)(widget_t *this,int x,int y,int w,int h),
 				void(*onclick)(widget_t *w),
-				void(*onrelease)(widget_t *w)
+				void(*onrelease)(widget_t *w,char *s,int *p)
 				)
 {
 	int n=n_widgets;
@@ -65,6 +68,8 @@ widget add_widget(char *label,
 	widgets[n]->onrelease=onrelease?onrelease:standard_onrelease;
 	widgets[n]->draw=draw?draw:standard_draw;
 	widgets[n]->onclick=onclick?onclick:standard_click;
+
+	widgets[n]->visible=0;
 	
 	n_widgets++;
 	return (widget)n;
@@ -72,13 +77,12 @@ widget add_widget(char *label,
 
 /* Private */
 //typedef enum {HUD_OFFLINE,CONF,CONF_DESC,CONF_BINDING} ui_state_t;
-ui_state_t ui_state;
-cell *curr;
+//ui_state_t ui_state;
 
 
 char *conf_desc="Hello world";
 int keyboard_grabbed=0;
-
+/*
 typedef struct box_t {
 	int w,h;
 	int x,y;
@@ -89,26 +93,9 @@ typedef struct box_t {
 
 box_t **boxes;
 int n_boxes=0;
+*/
 
 extern int lastMX,lastMY;
-/*
-int add_box(int w,int h,int x,int y,ui_state_t s1,ui_state_t s2){
-	int n=n_boxes;
-	boxes=realloc(boxes,sizeof(box_t*)*(n+1));
-
-	boxes[n]=malloc(sizeof(box_t));
-	boxes[n]->w=w;
-	boxes[n]->h=h;
-	boxes[n]->x=y;
-	boxes[n]->y=y;
-	boxes[n]->current_state=s1;
-	boxes[n]->next_state=s2;
-
-	uk_log("add box {%i,%i, %i,%i}",w,h,x,y);
-
-	n_boxes++;
-}
-*/
 
 int test_intersect(int i,int x,int y){
 	widget_t *b=widgets[i];
@@ -122,10 +109,22 @@ int test_intersect(int i,int x,int y){
 
 
 void ui2_handle_release(char *s,int *propagate){
-	*propagate=ui_state!=CONF_DESC && ui_state!=CONF_BINDING; 
+	void (*f)(widget_t *this,char *,int *);
+	int p;
 	uk_log("UI2 got release %s",s);
+	for(int i=0;i<n_widgets;i++) {
+		if(widgets[i]->visible ){
+			f=widgets[i]->onrelease;
+			f(widgets[i],s,&p);
+			if(!p){
+				uk_log("do not propagate!!");
+				*propagate=0;
+				return;
+			}
+		}
+	}
+	*propagate=1;
 }
-
 
 void draw_normal(){
 	uk_log("draw_normal");
@@ -147,7 +146,6 @@ void draw_conf(){
 	int h=qh*2;
 
 	draw_box(w,h,qw,qh, c.r,c.g,c.b);	
-
 
 	draw_text_box("Description",w,h/2,qw,qh, white,c1);
 	draw_text_box("Binding",w,h/2,qw,qh+h/2, white,c2);
@@ -173,6 +171,7 @@ void draw_conf_binding(){
 
 void *draw_functions[]={draw_normal,draw_conf,draw_conf_desc,draw_conf_binding};
 
+/*
 void ui2_init_old(){
 	ui_state=HUD_OFFLINE;
 
@@ -184,29 +183,33 @@ void ui2_init_old(){
 	int qw=WIDTH/4,qh=HEIGHT/4;
 	w=qw*2;
 	h=qh*2;
-
-
 }
+*/
 
 void ui2_handle_click(int mx,int my){
 	void (*f)(widget_t *this);
 	int w=WIDTH/8;
 	int h=HEIGHT/16; 
 	int x=WIDTH-w; 
-	int y=HEIGHT-h;
+	int y0=HEIGHT-h;
+	int y;
 
 	uk_log("click");
 	for(int i=0;i<n_widgets;i++) {
 		if(widgets[i]->visible ){
+			y=y0;
+			y0-=h;
 			uk_log("%i is visible (%i,%i) (%i,%i,%i,%i)",i,mx,my,x,y,w,h);
+
 			if( mx < x ) break;
 			if( my < y ) break;
 			if( mx > x + w ) break;
 			if( my > y + h ) break;
 			f=widgets[i]->onclick;
 			f(widgets[i]);
+			// Redraw our beutiful UI
+			render_ui2();
 		}
-		y-=h;
 	}
 }
 void render_ui2(){
@@ -219,6 +222,7 @@ void render_ui2(){
 	int y0=HEIGHT-h;
 	for(int i=0;i<n_widgets;i++) {
 		if(widgets[i]->visible ){
+			uk_log("widget %i is visible",i);
 			f=widgets[i]->draw;
 			f(widgets[i],x0,y0,w,h);
 			y0-=h;
@@ -227,23 +231,11 @@ void render_ui2(){
 }
 
 void widget_set_visible(widget w,int v){
+	uk_log("vis_for widget %i to %i\n",w,v);
 	widgets[(int)w]->visible=v?1:0;
-}
-
-
-void configure_click(widget_t *this){
-	widget_set_visible(w_configure,0);
-	widget_set_visible(w_select,1);
-
-	render_ui2();
 }
 
 void ui2_init(){
 	widgets=(widget_t**)malloc(sizeof(widget_t*)*(n_widgets+1));
-
-	w_configure=add_widget("Configure",NULL,configure_click,NULL);
-	w_select=add_widget("Select cell",NULL,NULL,NULL);
-
-	widget_set_visible(w_configure,1);
 }
 

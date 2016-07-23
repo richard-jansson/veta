@@ -1,0 +1,6 @@
+trash
+.*swp
+veta  
+*.o
+veta.log
+veta.state

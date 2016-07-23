@@ -217,10 +217,7 @@ void ui_loop(){
 			case ButtonPress:
 				lastMX=ev.xbutton.x;
 				lastMY=ev.xbutton.y;
-					// Since we're grabbing on win and not root we don't need to subtract this.
-//				get_win_pos(win,&x,&y);
-				//  112 just because ... 
-//				onclick(lastMX-x-112,lastMY-y);
+
 				onclick(lastMX,lastMY);
 				break;
 			case KeyRelease:
@@ -228,7 +225,6 @@ void ui_loop(){
 				XLookupString(&ev,keydown,16,&keysym_ret,&status_in_out);
 				onrelease(keydown,&propagate);
 				uk_log("propagate = %i",propagate);
-				propagate=1;
 				if(!propagate) break;
 
 				uk_log("event propagated");
@@ -498,12 +494,6 @@ int _get_keycode_count(KeySym *keymap,int min,int max,int keysyms_per_keycode){
 	return count_keysyms;
 }
 
-// Grab all keys 
-void grab_keyboard(){
-	uk_log("grabbed complete keyboard for win!");
-	XGrabKeyboard(dpy,win,0,GrabModeAsync,GrabModeAsync,CurrentTime);
-}
-
 void _grabkeys(){
 	Window root = DefaultRootWindow(dpy);
 	// Shift, Lock, ctrl
@@ -639,6 +629,11 @@ u*/
 }
 
 void grabkeyboard(){
+	XGrabKeyboard(dpy,win,0,GrabModeAsync,GrabModeAsync,CurrentTime);
+}
+
+void ungrabkeyboard(){
+	XUngrabKeyboard(dpy,CurrentTime);
 }
 
 void grabkeys(){

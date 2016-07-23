@@ -2,12 +2,10 @@
 #include<assert.h>
 
 #include "veta.h"
-
 #include "debug.h"
 #include "keyboard_io.h"
 #include "ui.h"
 #include "conf.h"
-
 #include "render.h"
 
 cell *root;
@@ -39,7 +37,7 @@ void veta_handleevent(event_t *event){
 		case RESET:
 			uk_log("Reset");
 			clear_selection(root);
-			ui_state=HUD_OFFLINE;
+//			ui_state=HUD_OFFLINE;
 			veta_render();
 			break;
 		case SELECT_CELL:
@@ -47,9 +45,10 @@ void veta_handleevent(event_t *event){
 			select_cell(root,event->cell);
 			symbol *sym;
 			if(NULL!=(sym=get_selected_symbol(root))){
+				clear_selection(root);
+				if(ui2_onselect_symbol(sym)) break;
 				sendkey(sym->data,1,0);
 //				uk_log("send symbol (%s)",symbol->name);
-				clear_selection(root);
 			}
 			veta_render();
 			break;
@@ -68,10 +67,8 @@ void veta_symbolsloaded(symbol *symbols,int n){
 int render_cell(cell *cell,void *data){
 	box *ob=(box *)data;
 	box nb;
-//	uk_log("Cell: n=%i children=%i level=%i\n",cell->nchildren,cell->level);
-//	uk_log("render cell level=%i!",cell->level);
-//	uk_log("render at [%i,%i,%i,%i]",b->x0,b->y0,b->w,b->h);
 	assert(cell);
+
 	if(cell->level>1){
 		if(cell->symbol->name){
 			rgb fg={255,255,255};
@@ -79,12 +76,9 @@ int render_cell(cell *cell,void *data){
 			// FIXME this should handle an arbitrary level
 			int is_selected=cell->selected || (cell->parent && cell->parent->selected);
 			bg=is_selected?cell->color_selected:cell->color;
-//			bg=cell->selected?cell->color_selected:(rgb){0,0,255};
-//			uk_log("%i %i %i",bg.r,bg.g,bg.b);
 
 			draw_text_box(cell->symbol->name,ob->w,ob->h,ob->x0,ob->y0,fg,bg);
 		}else{
-//			draw_box(ob->w,ob->h,ob->x0,ob->y0,r,g,b);
 		}
 //		uk_log("[%i,%i,%i,%i]\n",ob->w,ob->h,ob->x0,ob->y0);
 	} else {
@@ -109,7 +103,6 @@ int render_cell(cell *cell,void *data){
 	return 0;
 }
 
-
 void veta_render(){
 	uk_log("veta_render");
 	box b;
@@ -121,6 +114,9 @@ void veta_render(){
 	render_cell(root,&b);
 
 	render_ui2();
+}
+
+void veta_click(int x,int y){
 }
 
 int main(int argc,char *argv[]){
@@ -161,6 +157,9 @@ int main(int argc,char *argv[]){
 	ui_init(WIDTH,HEIGHT,st->x,st->y);
 
 	ui2_init();
+
+// ui logic
+	ui2_add_widgets();
 
 	ui_loop();
 	return 1;
