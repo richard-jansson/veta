@@ -1,3 +1,6 @@
+/* This is platform specific */ 
+
+/* TODO: remove SDL references */
 #include<X11/Xlib.h>
 #include<SDL/SDL_thread.h>
 

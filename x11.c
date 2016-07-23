@@ -45,7 +45,7 @@ void _set_sticky(Display *dpy,Window window);
 /* Callback functions / Events */
 void (*onevent)(event_t *ev);
 void (*onclick)(int x,int y);
-void (*onrelease)(char *symbol,int *propagate,vkey key);
+void (*onrelease)(char *symbol,int *propagate,vkey key,void *data);
 void (*onhaskeymap)(symbol *symbols,int n);
 void (*onrender)();
 /* End of callback funtions */ 
@@ -59,7 +59,7 @@ void ui_onclick(void(*callback)(int x,int y)){
 	onclick=callback;
 }
 
-void ui_onrelease(void(*callback)(char *s,int *p)){
+void ui_onrelease(void(*callback)(char *s,int *p,vkey key,void *data)){
 	onrelease=callback;
 }
 
@@ -210,6 +210,8 @@ void ui_loop(){
 	KeySym keysym_ret;
 	XComposeStatus status_in_out;
 
+	symbol_x11 data;
+
 	vkey key=ANY;
 
 	while(running){
@@ -221,23 +223,32 @@ void ui_loop(){
 				lastMY=ev.xbutton.y;
 
 				onclick(lastMX,lastMY);
+				refresh();
 				break;
 			case KeyRelease:
 				uk_log("KeyRelease %i",ev.xkey.keycode);
+
+	// FIXME what should index be? currently at 0
+				data.ks=XKeycodeToKeysym(dpy,ev.xkey.keycode,0);
+				data.modifier=0;
+				data.keycode=ev.xkey.keycode;
+
+				log_platformspecific(&data);
 				
 				if(ev.xkey.keycode==22) key=BACKSPACE;
 				else if(ev.xkey.keycode==36) key=ENTER;
 				else key=ANY;
 
 				XLookupString(&ev,keydown,16,&keysym_ret,&status_in_out);
-				onrelease(keydown,&propagate,key);
+				onrelease(keydown,&propagate,key,(void *)&data);
 				uk_log("propagate = %i",propagate);
 				if(!propagate) break;
 
 				uk_log("event propagated");
 				v_event=_get_event_from_keycode(ev.xkey.keycode);
 				onevent(v_event);
-				onrender();
+
+				refresh();
 				XFlush(dpy);
 				break;
 			case DestroyNotify:
@@ -672,4 +683,21 @@ void ungrabkeys(){
 //		XUngrabKey(dpy,keybindings[i].keycode,16,root);
 	}
 	XFlush(dpy);
+}
+
+// Send Expose event to trigger a redraw
+void refresh(){
+	XEvent ev;
+	ev.type=Expose;
+
+	XSendEvent(dpy,win,1,0,&ev);
+}
+
+void log_platformspecific(void  *data){
+	symbol_x11 *sym=(symbol_x11 *)data;
+	uk_log("keysym 0x%x keycode %i %s modifier=%i",
+			(unsigned int)sym->ks,
+			(int)sym->keycode,
+			XKeysymToString(sym->ks),
+			sym->modifier);
 }

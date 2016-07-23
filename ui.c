@@ -20,7 +20,7 @@ void widget_set_visible(widget w,int v);
 widget_t **widgets;
 int n_widgets=0;
 
-void standard_onrelease(widget_t *this,char *s,int *propagate,vkey key){
+void standard_onrelease(widget_t *this,char *s,int *propagate,vkey key,void *psecific){
 	*propagate=1;
 	uk_log("keypress sent to widget ... ignoring ...");
 }
@@ -72,6 +72,7 @@ widget add_widget(char *label,
 	widgets[n]->visible=0;
 	
 	n_widgets++;
+	uk_log("added %s = %i\n",label,(int)n); 
 	return (widget)n;
 }
 
@@ -108,14 +109,14 @@ int test_intersect(int i,int x,int y){
 }
 
 
-void ui2_handle_release(char *s,int *propagate,vkey key){
-	void (*f)(widget_t *this,char *,int *,vkey key);
+void ui2_handle_release(char *s,int *propagate,vkey key,void *pspecific){
+	void (*f)(widget_t *this,char *,int *,vkey key,void *data);
 	int p;
 	uk_log("UI2 got release %s",s);
 	for(int i=0;i<n_widgets;i++) {
 		if(widgets[i]->visible ){
 			f=widgets[i]->onrelease;
-			f(widgets[i],s,&p,key);
+			f(widgets[i],s,&p,key,pspecific);
 			if(!p){
 				uk_log("do not propagate!!");
 				*propagate=0;
@@ -194,24 +195,32 @@ void ui2_handle_click(int mx,int my){
 	int y0=HEIGHT-h;
 	int y;
 
-	uk_log("click");
+	uk_log("click at (%i,%i)",mx,my);
+
 	for(int i=0;i<n_widgets;i++) {
-		if(widgets[i]->visible ){
+		if(widgets[i]->visible  ){
 			y=y0;
 			y0-=h;
-			uk_log("%i is visible (%i,%i) (%i,%i,%i,%i)",i,mx,my,x,y,w,h);
 
-			if( mx < x ) break;
-			if( my < y ) break;
-			if( mx > x + w ) break;
-			if( my > y + h ) break;
+			//  FIXME: code duplication create an intersect helper function!
+//			uk_log("intersect vs %i is visible (%i,%i) (%i,%i,%i,%i)",i,mx,my,x,y,w,h);
+
+			if( mx < x ) continue;
+			if( my < y ) continue;
+			if( mx > x + w ) continue;
+			if( my > y + h ) continue;
 			f=widgets[i]->onclick;
 			f(widgets[i]);
 			// Redraw our beutiful UI
-			render_ui2();
+			refresh();
 		}
 	}
 }
+
+/* 
+ * FIXME: code duplication between render_ui2 and ui2_handle_click 
+ *
+ */ 
 void render_ui2(){
 	uk_log("render ui2");
 	void (*f)(widget_t *this,int x,int y,int w,int h);
@@ -222,17 +231,19 @@ void render_ui2(){
 	int y0=HEIGHT-h;
 	for(int i=0;i<n_widgets;i++) {
 		if(widgets[i]->visible ){
-			uk_log("widget %i is visible",i);
+//			uk_log("widget %i is visible",i);
 			f=widgets[i]->draw;
 			f(widgets[i],x0,y0,w,h);
 			y0-=h;
 		}
 	}
+//	refresh();
 }
 
 void widget_set_visible(widget w,int v){
 	uk_log("vis_for widget %i to %i\n",w,v);
 	widgets[(int)w]->visible=v?1:0;
+	refresh();
 }
 
 void ui2_init(){

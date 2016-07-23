@@ -13,8 +13,10 @@ char *label=NULL;
 // Our widgets
 widget w_configure;
 widget w_select;
-widget w_description,w_binding;
-widget w_label;
+widget w_description,w_binding,w_done;
+widget w_label; // Edit  label 
+widget w_map; //  Edit mapping
+
 
 cell *curr;
 
@@ -41,9 +43,17 @@ char *string_backspace(char *s){
 	return s;
 }
 
+void done_click(widget_t *this){
+	widget_set_visible(w_configure,1);
+
+	widget_set_visible(w_description,0);
+	widget_set_visible(w_binding,0);
+	widget_set_visible(w_done,0);
+
+}
+
 // Click on configure -> Go to select cell
 void configure_click(widget_t *this){
-	uk_log("configure!");
 	widget_set_visible(w_configure,0);
 
 	widget_set_visible(w_select,1);
@@ -64,14 +74,17 @@ int ui2_onselect_symbol(symbol *sym){
 		selectcell=0;
 		selected=sym;
 		widget_set_visible(w_select,0);
+
 		widget_set_visible(w_description,1);
 		widget_set_visible(w_binding,1);
+		widget_set_visible(w_done,1);
 		render_ui2();
 		return  1;
 	}
 	return 0;
 }
 
+// Go to edit label
 void desc_click(widget *this){
 	uk_log("description was clicked");
 
@@ -82,8 +95,44 @@ void desc_click(widget *this){
 	grabkeyboard();
 }
 
+// Go to map
+void binding_click(widget *this){
+	uk_log("binding was clicked");
 
-void label_onrelease(widget_t *this,char *s,int *propagate,vkey  key){
+	widget_set_visible(w_description,0);
+	widget_set_visible(w_binding,0);
+
+	widget_set_visible(w_map,1);
+	grabkeyboard();
+}
+
+// Do you worry about feature creep, me  I don't!
+// TODO: make it so that we can use strings here 
+// TODO: make here so that we can call system("whatever %s"); based on this
+// TODO: make it so that there is generic output stuff
+void map_onrelease(widget_t *this,char *s,int *propagate,vkey  key,void *pspecific){
+	if(!this->visible){
+		*propagate=1;
+		return;
+	}
+	uk_log("REMAPPING  %s\n",selected->name); 
+	log_platformspecific(selected->data);
+	log_platformspecific(pspecific);
+
+	selected->data=pspecific;
+
+
+	this->visible=0;
+
+	widget_set_visible(w_description,1);	
+	widget_set_visible(w_binding,1);
+	widget_set_visible(w_done,1);
+	*propagate=0;
+
+	ungrabkeyboard();
+}
+
+void label_onrelease(widget_t *this,char *s,int *propagate,vkey  key,void *pspecific){
 	if( key  == BACKSPACE) {
 		label=string_backspace(label);
 		selected->name=label;
@@ -116,7 +165,6 @@ void label_onrelease(widget_t *this,char *s,int *propagate,vkey  key){
  onclick					III -> {IV,V,VI}
  onenter					IV -> III
  onbinding				V		-> III
-
 */
 
 void ui2_add_widgets(){
@@ -127,14 +175,17 @@ void ui2_add_widgets(){
 // II 
 	w_select=add_widget("Select cell",NULL,NULL,NULL);
 
-
 // III 
 //	w_cellname=add_widget("N/A",NULL,NULL,NULL);
 	w_description=add_widget("Description",NULL,desc_click,NULL);
-	w_binding=add_widget("Binding",NULL,NULL,NULL);
+	w_binding=add_widget("Binding",NULL,binding_click,NULL);
+	w_done=add_widget("Done",NULL,done_click,NULL);
 
 // IV 
 	w_label=add_widget(label,text_draw,NULL,label_onrelease);
+
+// V 
+	w_map=add_widget("MAP",text_draw,NULL,map_onrelease);
 
 	widget_set_visible(w_configure,1);
 }
