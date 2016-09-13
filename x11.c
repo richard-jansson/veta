@@ -173,12 +173,12 @@ void get_win_pos(Window *win,int *x,int *y){
 	int X=0;
 	int Y=0;
 	int i=0;
-	unsigned int n_children=0;
-	Window root_return=NULL,*children_return=NULL,parent=NULL;
+	unsigned int n_children;
+	Window root_return,*children_return,parent;
 	
 	for(Window cwin=win; cwin != 0; cwin=parent){
-		// I'm sure this is cheating!
-		XQueryTree(dpy,cwin,&root_return,&parent,&children_return,&n_children);
+				// I'm sure this is cheating!
+					XQueryTree(dpy,cwin,&root_return,&parent,&children_return,&n_children);
 
 
 					// Don't ask. This is pure magic!
@@ -369,7 +369,6 @@ XColor _rgb2XColor(int r,int g,int b){
 	c1.red=r*256;
 	c1.green=g*256;
 	c1.blue=b*256;
-	c1.pixel=0;
 	return c1;
 }
 
@@ -377,15 +376,12 @@ void draw_box(int w,int h,int x,int y,int r,int g,int b){
 	XColor bg=_rgb2XColor(r,g,b);
 	GC bg_gc=XCreateGC(dpy,win,0,0);
 
-//	XGetWindowAttributes(dpy,win,&attr);
 	XAllocColor(dpy,attr.colormap,&bg);
 	
 	XSetForeground(dpy,bg_gc,bg.pixel);
 
 	XSetFillStyle(dpy,bg_gc,FillSolid);
-//	XFillRectangle(dpy,win,bg_gc,x0,y0,w0,h0);
 	XFillRectangle(dpy,win,bg_gc,x,y,w,h);
-	XFlush(dpy);
 }
 void _get_unique_keycodes(KeySym *keymap,int min,int max,int keysyms_per_keycode,int pass){
 	// We really shouldn't skip all modifiers after 3
@@ -602,11 +598,9 @@ void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
 	XAllocColor(dpy,attr.colormap,&white);
 	
 	XSetForeground(dpy,white_gc,white.pixel);
-	XFlush(dpy);
 	XDrawRectangle(dpy,win,white_gc,x,y,w,h);
 
 	XSetForeground(dpy,fg_gc,fg.pixel);
-	XFlush(dpy);
 
 //	uk_log("Draw text!!!!");
 
@@ -633,7 +627,6 @@ u*/
 
 //	XDrawText(dpy,win,white_gc,x+w*0.2,y+=h0/2,,0);
 
-	XFlush(dpy);
 }
 
 void grabkeyboard(){

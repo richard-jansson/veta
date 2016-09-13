@@ -65,7 +65,6 @@ void veta_symbolsloaded(symbol *symbols,int n){
 }
 
 int render_cell(cell *cell,void *data){
-	uk_log("render_cell");
 	box *ob=(box *)data;
 	box nb;
 	assert(cell);
@@ -101,7 +100,6 @@ int render_cell(cell *cell,void *data){
 		
 		render_cell(cell->children[i],&nb);
 	}
-	uk_log("render cell end");
 	return 0;
 }
 
