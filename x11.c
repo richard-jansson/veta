@@ -173,12 +173,12 @@ void get_win_pos(Window *win,int *x,int *y){
 	int X=0;
 	int Y=0;
 	int i=0;
-	unsigned int n_children;
-	Window root_return,*children_return,parent;
+	unsigned int n_children=0;
+	Window root_return=NULL,*children_return=NULL,parent=NULL;
 	
 	for(Window cwin=win; cwin != 0; cwin=parent){
-				// I'm sure this is cheating!
-					XQueryTree(dpy,cwin,&root_return,&parent,&children_return,&n_children);
+		// I'm sure this is cheating!
+		XQueryTree(dpy,cwin,&root_return,&parent,&children_return,&n_children);
 
 
 					// Don't ask. This is pure magic!
@@ -186,10 +186,10 @@ void get_win_pos(Window *win,int *x,int *y){
 					// there are for some 2 windows around my window 
 					// until I can see the  actual position of the window. 
 					// Milage may vary. 
-						XWindowAttributes attr;
-						XGetWindowAttributes(dpy,cwin,&attr);
-						X+=attr.x; 
-						Y+=attr.y;
+						XWindowAttributes tattr;
+						XGetWindowAttributes(dpy,cwin,&tattr);
+						X+=tattr.x; 
+						Y+=tattr.y;
 					i++;
 		}
 
@@ -369,6 +369,7 @@ XColor _rgb2XColor(int r,int g,int b){
 	c1.red=r*256;
 	c1.green=g*256;
 	c1.blue=b*256;
+	c1.pixel=0;
 	return c1;
 }
 
@@ -376,6 +377,7 @@ void draw_box(int w,int h,int x,int y,int r,int g,int b){
 	XColor bg=_rgb2XColor(r,g,b);
 	GC bg_gc=XCreateGC(dpy,win,0,0);
 
+//	XGetWindowAttributes(dpy,win,&attr);
 	XAllocColor(dpy,attr.colormap,&bg);
 	
 	XSetForeground(dpy,bg_gc,bg.pixel);
@@ -489,7 +491,7 @@ void _add_unique(char *s,KeySym ks,int mod,KeyCode keycode){
 	}
 //	uk_log("[%s]\t%i\t%i\t%i",s,ks,mod,keycode);
 //	assert(n_unique < max_keysyms);
-	unique[n_unique].name=malloc(strlen(s));
+	unique[n_unique].name=malloc(strlen(s)+1);
 	memcpy(unique[n_unique].name,s,strlen(s)+1);
 	
 	symbol_x11 *d=malloc(sizeof(symbol_x11));
@@ -632,18 +634,6 @@ u*/
 //	XDrawText(dpy,win,white_gc,x+w*0.2,y+=h0/2,,0);
 
 	XFlush(dpy);
-
-/*	
-	Perhaps you want it in SDL Instead!
-
-	SDL_Surface *line = TTF_RenderText_Shaded(font,txt,fg,bg);
-	if(!line) return;
-	SDL_Rect fontdst={
-				x+(w-line->w)/2,
-				y+(h-line->h)/2,
-				line->w,
-				line->h};
-	SDL_BlitSurface(line,NULL,window,&fontdst); */
 }
 
 void grabkeyboard(){

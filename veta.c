@@ -65,6 +65,7 @@ void veta_symbolsloaded(symbol *symbols,int n){
 }
 
 int render_cell(cell *cell,void *data){
+	uk_log("render_cell");
 	box *ob=(box *)data;
 	box nb;
 	assert(cell);
@@ -100,6 +101,7 @@ int render_cell(cell *cell,void *data){
 		
 		render_cell(cell->children[i],&nb);
 	}
+	uk_log("render cell end");
 	return 0;
 }
 
@@ -110,16 +112,20 @@ void veta_render(){
 	b.w=WIDTH;
 	b.h=HEIGHT;
 //	recurse_cells(root,render_cell,&b);
+	uk_log("draw_box");
 	draw_box(WIDTH,HEIGHT,0,0,0,0,0);
+	uk_log("render_cell");
 	render_cell(root,&b);
-
-
+	
+	uk_log("render_ui2");
 	render_ui2();
 #ifdef DEBUG
+	uk_log("debug!");
 	rgb black=(rgb){0,0,0};
 	rgb white=(rgb){0xff,0xff,0xff};
 	draw_text_box(BUILD,650,40,20,HEIGHT-45,black,black);
 #endif
+	uk_log("render done!");
 }
 
 void veta_click(int x,int y){

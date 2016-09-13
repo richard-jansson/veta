@@ -30,8 +30,8 @@ cell *create_recurse(int lvl,int cellsizen,int depth,int childn,cell *parent){
 	if(lvl==depth){
 		// TODO this isn't really right
 		if(symbols_added == max_symbols){
+			if(curr && curr->children) free(curr->children);
 			free(curr);
-			free(curr->children);
 			return NULL; 
 		}
 		curr->symbol=current_symbol;
