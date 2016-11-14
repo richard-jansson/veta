@@ -1,8 +1,6 @@
 /* This is platform specific */ 
 
-/* TODO: remove SDL references */
 #include<X11/Xlib.h>
-#include<SDL/SDL_thread.h>
 
 typedef struct _modifier_x11 {
 	int modifier;
