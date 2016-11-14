@@ -1,3 +1,3 @@
-#define VERSION "0.1.27-master"
-#define COMMIT "275bfb46b4cf763af85c31de6d97815f69b1c273"
-#define BUILD "0.1.27-master 275bfb46b4cf763af85c31de6d97815f69b1c273"
+#define VERSION "0.1.39-master"
+#define COMMIT "b38d557c309689c6f6e1228f25cdfb2c1584c96b"
+#define BUILD "0.1.39-master b38d557c309689c6f6e1228f25cdfb2c1584c96b"

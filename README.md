@@ -27,7 +27,7 @@ The keybindings are currently hardcoded in the keybindings array in x11.c. With 
 ## Compilation A.K.A. How to run
 To run the program you'll need a UNIX machine. The instructions below are intended for an Ubuntu 16.04 machine. If you are trying to use something else you might run into some problem. This is because I programmed the UI with to the metal X11 code which might make it run into problems if you are using another windowmanager. If you run into such problems please contact me. 
 
-sudo apt-get install libx11-dev libxtst-dev git
+sudo apt-get install libx11-dev libxtst-dev git libsdl-dev
 
 git clone "https://github.com/richard-jansson/veta"
 
@@ -55,3 +55,7 @@ Select cell by zooming in on the deeper cell. My guess is that this makes it eas
 --highlight
 
 Highlight the cells that the user has selected. This option I would say is less distracting once you've got the hang of the system which shouldn't take to long. Even if you only are moderately gifted.
+
+
+## Feedback 
+
