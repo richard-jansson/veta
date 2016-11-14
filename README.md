@@ -11,7 +11,6 @@ Once you've started the program you can enable or disable the grabbing of the ke
 
 Then go on by pressing one of the following keys:
 
-| *   | *   | *   | *   | 
 | --- | --- | --- | --- |
 | Q   | W   | E   | R   | 
 | A   | S   | D   | F   |
