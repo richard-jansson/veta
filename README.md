@@ -4,7 +4,7 @@ Veta is a program that enables you to write, somewhat efficiently with only one 
 ## Use cases 
 Places where one handed text input with this method is useful, would be for controlling something with the numpad of a remote controll. Another system which matematically is annoying would be entering text on a virtual keyboard, by moving a curser to the left or to the right. In this system worst case you would have to move the cursor - 50 steps or something. 
 
-Another idea would be to train people to use a better version of this program and by doing so removing the need to move their right hand from the mouse every now and then. This is something I personally find really annoying and uncomfortable.
+Another idea would be to train people to use a better version of this program and by doing so removing the need to move their right hand from the mouse every now and then. This is something I personally find really annoying and uncomfortable. What we end up with then is making office worker work in a mode more reminiscent of how FPS gamers use their computers.
 
 ## Usage 
 To use this program. Simply do the following on a ubuntu 16.04 machine. Then you can use num lock to toggle it's functionallity. 
