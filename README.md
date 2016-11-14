@@ -7,9 +7,25 @@ Places where one handed text input with this method is useful, would be for cont
 Another idea would be to train people to use a better version of this program and by doing so removing the need to move their right hand from the mouse every now and then. This is something I personally find really annoying and uncomfortable. What we end up with then is making office worker work in a mode more reminiscent of how FPS gamers use their computers.
 
 ## Usage 
-To use this program. Simply do the following on a ubuntu 16.04 machine. Then you can use num lock to toggle it's functionallity. 
+Once you've started the program you can enable or disable the grabbing of the keys with num lock. This is acctually a bug but I found it to becomme a useful feature. 
 
-sudo apt-get install libsdl1.2-dev libx11-dev libxtst-dev git
+Then go on by pressing one of the following keys:
+
+| Q | W | E | R | 
+| A | S | D | F |
+| Z | X | C | Z |
+
+Each of these keys correspond to a cell onscreen. Press Q for the first cell and W for the second. If you want to cancel the selection and select a higher level press SHIFT.
+
+To quit thep program press the § key.
+
+The keybindings are currently hardcoded in the keybindings array in x11.c. With the help of the nifty program xev. You could easily figure out how to change the keycodes and change them. This might cause problems for all of you who not are using a Finish keyboard layout. Please contact me with any questions.
+
+
+## Compilation A.K.A. How to run
+To run the program you'll need a UNIX machine. The instructions below are intended for an Ubuntu 16.04 machine. If you are trying to use something else you might run into some problem. This is because I programmed the UI with to the metal X11 code which might make it run into problems if you are using another windowmanager. If you run into such problems please contact me. 
+
+sudo apt-get install libx11-dev libxtst-dev git
 
 git clone "https://github.com/richard-jansson/veta"
 
@@ -18,6 +34,7 @@ cd veta
 make 
 
 ./veta
+
 
 ## Command line switches:
 
