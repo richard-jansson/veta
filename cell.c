@@ -175,3 +175,13 @@ void clear_selection(cell *root){
 	deepest_selected_cell=NULL;
 	prev_lvl_selected=-1;
 }
+
+
+// I've omitted to make this work at an arbitrary level. According to my mental specification.
+cell *get_deepest_cell(cell *root){
+	cell *deepest=root;
+	for(int i=0;i<root->nchildren;i++){
+		if(root->children[i] && root->children[i]->selected) deepest=root->children[i];
+	}
+	return deepest;
+}

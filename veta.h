@@ -51,8 +51,10 @@ typedef struct _box {
 }box;
 
 extern char *symbol_file; 
-typedef enum  {NONE,LOAD,DUMP} smode_t;
-extern smode_t symbol_mode;
+typedef enum  {NONE,LOAD,DUMP} sym_mode_t;
+typedef enum  {ZOOM,HIGHLIGHT} sel_mode_t;
+
+extern sym_mode_t symbol_mode;
 
 
 /*  UI */

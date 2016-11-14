@@ -12,13 +12,16 @@ cell *root;
 
 /* Configuration options */
 char *symbol_file=NULL; 
-smode_t symbol_mode;
+sym_mode_t symbol_mode;
+sel_mode_t selection_mode=ZOOM;
 /* end of configuration options */
 
 void usage(char *cmd){
 	printf("Usage: %s \n",cmd);	
 	printf("\t--dump-symbols [file]\t dump symbols to file\n");
 	printf("\t--load-symbols [file]\t load symbols from  file\n");
+	printf("\t--zoom\t Select cells by zooming\n");
+	printf("\t--highlight\t Select cells by highlighting\n");
 	exit(1);
 }
 
@@ -48,7 +51,6 @@ void veta_handleevent(event_t *event){
 				clear_selection(root);
 				if(ui2_onselect_symbol(sym)) break;
 				sendkey(sym->data,1,0);
-//				uk_log("send symbol (%s)",symbol->name);
 			}
 			veta_render();
 			break;
@@ -65,9 +67,12 @@ void veta_symbolsloaded(symbol *symbols,int n){
 }
 
 int render_cell(cell *cell,void *data){
+	assert(cell != NULL);
+	assert(data != NULL);
 	box *ob=(box *)data;
 	box nb;
 	assert(cell);
+
 
 	if(cell->level>1){
 		if(cell->symbol->name){
@@ -75,12 +80,12 @@ int render_cell(cell *cell,void *data){
 			rgb bg={0,0,0};
 			// FIXME this should handle an arbitrary level
 			int is_selected=cell->selected || (cell->parent && cell->parent->selected);
-			bg=is_selected?cell->color_selected:cell->color;
+			if(selection_mode==HIGHLIGHT) bg=is_selected?cell->color_selected:cell->color;
+			else bg=cell->color;
 
 			draw_text_box(cell->symbol->name,ob->w,ob->h,ob->x0,ob->y0,fg,bg);
 		}else{
 		}
-//		uk_log("[%i,%i,%i,%i]\n",ob->w,ob->h,ob->x0,ob->y0);
 	} else {
 //		draw_box(WIDTH,HEIGHT,0,0,0,0,0);
 	}
@@ -96,7 +101,6 @@ int render_cell(cell *cell,void *data){
 	for(int i=0;i<cell->nchildren;i++){
 		nb.x0=nb.w*(i%CELLS_W)+ob->x0+pleft;	
 		nb.y0=nb.h*(i/CELLS_W)+ob->y0+ptop;
-//		uk_log("%i,%i",nb.x0,nb.y0);
 		
 		render_cell(cell->children[i],&nb);
 	}
@@ -109,13 +113,20 @@ void veta_render(){
 	b.x0=b.y0=0;
 	b.w=WIDTH;
 	b.h=HEIGHT;
+
 //	recurse_cells(root,render_cell,&b);
+
 	uk_log("draw_box");
 	draw_box(WIDTH,HEIGHT,0,0,0,0,0);
 	uk_log("render_cell");
-	render_cell(root,&b);
+
+	if(selection_mode==ZOOM){
+		cell *deepest=get_deepest_cell(root);
+		render_cell(deepest,&b);
+	}else{
+		render_cell(root,&b);
+	}
 	
-	uk_log("render_ui2");
 	render_ui2();
 #ifdef DEBUG
 	uk_log("debug!");
@@ -147,6 +158,10 @@ int main(int argc,char *argv[]){
 			i++;
 			if(i>=argc) usage(argv[0]);
 			symbol_file=argv[i];
+		}else if(!strcmp("--zoom",argv[i])){
+			selection_mode=ZOOM;
+		}else if(!strcmp("--highlight",argv[i])){
+			selection_mode=HIGHLIGHT;
 		}else{
 			usage(argv[0]);
 		}
@@ -162,13 +177,10 @@ int main(int argc,char *argv[]){
 	ui_haskeymap(veta_symbolsloaded);
 	ui_render(veta_render);
 
-//	set_draw_text_box(r_render_cell);
-
 	ui_init(WIDTH,HEIGHT,st->x,st->y);
 
 	ui2_init();
 
-// ui logic
 	ui2_add_widgets();
 
 	ui_loop();
