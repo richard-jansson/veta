@@ -11,11 +11,11 @@ Once you've started the program you can enable or disable the grabbing of the ke
 
 Then go on by pressing one of the following keys:
 
-| *  | *  | *  | *  | 
-| -- | -- | -- | -- |
-| Q  | W  | E  | R  | 
-| A  | S  | D  | F  |
-| Z  | X  | C  | Z  |
+| *   | *   | *   | *   | 
+| --- | --- | --- | --- |
+| Q   | W   | E   | R   | 
+| A   | S   | D   | F   |
+| Z   | X   | C   | Z   |
 
 Each of these keys correspond to a cell onscreen. Press Q for the first cell and W for the second. If you want to cancel the selection and select a higher level press SHIFT.
 
