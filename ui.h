@@ -12,3 +12,10 @@ extern int lastX,lastY;
 void ui_onevent(void(*onevent)(event_t *ev));
 void ui_haskeymap(void(*has_keymap)(symbol *keymap,int n));
 void ui_quit();
+void ui_render();
+void refresh();
+void log_platformspecific(void  *data);
+
+void widget_set_visible(widget w,int v);
+void grabkeyboard();
+void ungrabkeyboard();

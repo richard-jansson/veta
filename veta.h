@@ -72,6 +72,8 @@ void ui2_handle_click(int x,int y);
 void ui2_handle_release(char *s,int *propagate,vkey key,void *platform_specific);
 void ui2_init();
 void ui_onrelase(void(*callback)(char *s,int *p));
+int ui2_onselect_symbol(symbol *sym);
+void ui2_add_widgets();
 
 /* VETA */ 
 void veta_render();

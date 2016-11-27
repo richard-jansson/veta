@@ -20,8 +20,5 @@ ver.h:
 veta: ver.h $(OBJ) 
 	$(CC) -o $@ $^ $(LFLAGS) $(OBJS)
 
-veta: ver.h $(OBJ) 
-	$(CC) -o $@ $^ $(LFLAGS) $(OBJS)
-
 clean:
 	rm -f $(OBJ) ver.h

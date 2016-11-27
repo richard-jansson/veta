@@ -113,6 +113,59 @@ void ui_quit(){
 	running=0;
 }
 
+void _set_alpha(Display *dpy,Window window,double alpha){
+	XEvent ev;
+	Atom net_wm_state = XInternAtom(dpy,"_NET_WM_WINDOW_OPACITY",False);
+//	Atom net_wm_state_sticky = XInternAtom(dpy,"_NET_WM_STATE_STICKY",False);
+	Window root=DefaultRootWindow(dpy);
+
+	uint32_t calpha=(uint32_t)(alpha*(uint32_t)-1); 
+
+	uk_log("cardinal alpha value = %x %i\n",calpha,calpha);
+
+	ev.xclient.type=ClientMessage;
+	ev.xclient.serial=0;
+	ev.xclient.send_event=True;
+	ev.xclient.display=dpy;
+	ev.xclient.window=window,
+	ev.xclient.message_type=net_wm_state;
+	ev.xclient.format=32;
+
+	ev.xclient.data.l[0]=calpha;
+	ev.xclient.data.l[1]=calpha;
+	ev.xclient.data.l[2]=0;
+	ev.xclient.data.l[3]=0;
+	ev.xclient.data.l[4]=0;
+
+	XSendEvent(dpy,root,False, SubstructureRedirectMask|SubstructureNotifyMask, &ev);
+
+}
+
+void _set_sticky(Display *dpy,Window window){
+	XEvent ev;
+	Atom net_wm_state = XInternAtom(dpy,"_NET_WM_STATE",False);
+	Atom net_wm_state_sticky = XInternAtom(dpy,"_NET_WM_STATE_STICKY",False);
+	Window root=DefaultRootWindow(dpy);
+
+	ev.xclient.type=ClientMessage;
+	ev.xclient.serial=0;
+	ev.xclient.send_event=True;
+	ev.xclient.display=dpy;
+	ev.xclient.window=window,
+	ev.xclient.message_type=net_wm_state;
+	ev.xclient.format=32;
+
+	ev.xclient.data.l[0]=1;
+	ev.xclient.data.l[1]=net_wm_state_sticky;
+	ev.xclient.data.l[2]=0;
+	ev.xclient.data.l[3]=0;
+	ev.xclient.data.l[4]=0;
+
+	XSendEvent(dpy,root,False,
+                       SubstructureRedirectMask|SubstructureNotifyMask, &ev);
+
+}
+
 void ui_init(int w,int h,int x,int y){
 	_w=w;
 	_h=h;
@@ -172,6 +225,7 @@ void ui_init(int w,int h,int x,int y){
 	_grabkeys();
 }
 
+// Should window be a pointer really?
 void get_win_pos(Window *win,int *x,int *y){
 	int X=0;
 	int Y=0;
@@ -179,6 +233,7 @@ void get_win_pos(Window *win,int *x,int *y){
 	unsigned int n_children;
 	Window root_return,*children_return,parent;
 	
+	// FIXME: This throws of a compilation warning. Does the code work?
 	for(Window cwin=win; cwin != 0; cwin=parent){
 				// I'm sure this is cheating!
 					XQueryTree(dpy,cwin,&root_return,&parent,&children_return,&n_children);
@@ -198,6 +253,23 @@ void get_win_pos(Window *win,int *x,int *y){
 
 		*x=X;
 		*y=Y;
+}
+
+// Send Expose event to trigger a redraw
+void refresh(){
+	XEvent ev;
+	ev.type=Expose;
+
+	XSendEvent(dpy,win,1,0,&ev);
+}
+
+void log_platformspecific(void  *data){
+	symbol_x11 *sym=(symbol_x11 *)data;
+	uk_log("keysym 0x%x keycode %i %s modifier=%i",
+			(unsigned int)sym->ks,
+			(int)sym->keycode,
+			XKeysymToString(sym->ks),
+			sym->modifier);
 }
 
 void ui_loop(){
@@ -231,7 +303,7 @@ void ui_loop(){
 			case KeyRelease:
 				uk_log("KeyRelease %i",ev.xkey.keycode);
 
-	// FIXME what should index be? currently at 0
+	// FIXME what should index be? currently at 0, also this function is deprecated
 				data.ks=XKeycodeToKeysym(dpy,ev.xkey.keycode,0);
 				data.modifier=0;
 				data.keycode=ev.xkey.keycode;
@@ -305,58 +377,6 @@ void ui_loop(){
 	writestate(STATE_FILE,lastX,lastY);
 }
 
-void _set_alpha(Display *dpy,Window window,double alpha){
-	XEvent ev;
-	Atom net_wm_state = XInternAtom(dpy,"_NET_WM_WINDOW_OPACITY",False);
-//	Atom net_wm_state_sticky = XInternAtom(dpy,"_NET_WM_STATE_STICKY",False);
-	Window root=DefaultRootWindow(dpy);
-
-	uint32_t calpha=(uint32_t)(alpha*(uint32_t)-1); 
-
-	uk_log("cardinal alpha value = %x %i\n",calpha,calpha);
-
-	ev.xclient.type=ClientMessage;
-	ev.xclient.serial=0;
-	ev.xclient.send_event=True;
-	ev.xclient.display=dpy;
-	ev.xclient.window=window,
-	ev.xclient.message_type=net_wm_state;
-	ev.xclient.format=32;
-
-	ev.xclient.data.l[0]=calpha;
-	ev.xclient.data.l[1]=calpha;
-	ev.xclient.data.l[2]=0;
-	ev.xclient.data.l[3]=0;
-	ev.xclient.data.l[4]=0;
-
-	XSendEvent(dpy,root,False, SubstructureRedirectMask|SubstructureNotifyMask, &ev);
-
-}
-
-void _set_sticky(Display *dpy,Window window){
-	XEvent ev;
-	Atom net_wm_state = XInternAtom(dpy,"_NET_WM_STATE",False);
-	Atom net_wm_state_sticky = XInternAtom(dpy,"_NET_WM_STATE_STICKY",False);
-	Window root=DefaultRootWindow(dpy);
-
-	ev.xclient.type=ClientMessage;
-	ev.xclient.serial=0;
-	ev.xclient.send_event=True;
-	ev.xclient.display=dpy;
-	ev.xclient.window=window,
-	ev.xclient.message_type=net_wm_state;
-	ev.xclient.format=32;
-
-	ev.xclient.data.l[0]=1;
-	ev.xclient.data.l[1]=net_wm_state_sticky;
-	ev.xclient.data.l[2]=0;
-	ev.xclient.data.l[3]=0;
-	ev.xclient.data.l[4]=0;
-
-	XSendEvent(dpy,root,False,
-                       SubstructureRedirectMask|SubstructureNotifyMask, &ev);
-
-}
 // Set x11 window on top
 void _set_on_top(Display *dpy,Window window){
 	XEvent ev;
@@ -700,19 +720,4 @@ void ungrabkeys(){
 	XFlush(dpy);
 }
 
-// Send Expose event to trigger a redraw
-void refresh(){
-	XEvent ev;
-	ev.type=Expose;
 
-	XSendEvent(dpy,win,1,0,&ev);
-}
-
-void log_platformspecific(void  *data){
-	symbol_x11 *sym=(symbol_x11 *)data;
-	uk_log("keysym 0x%x keycode %i %s modifier=%i",
-			(unsigned int)sym->ks,
-			(int)sym->keycode,
-			XKeysymToString(sym->ks),
-			sym->modifier);
-}

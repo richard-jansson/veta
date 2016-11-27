@@ -1,7 +1,12 @@
 /* This is the logic for the ui. So ui is library / helper functions for the 
   graphical user interface. And this would be what acctually does things. */
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include "veta.h"
+
+#include "keyboard_io.h"
+#include "ui.h"
 
 #include "debug.h"
 
@@ -157,7 +162,6 @@ void label_onrelease(widget_t *this,char *s,int *propagate,vkey  key,void *pspec
 
 		widget_set_visible(w_description,1);
 		widget_set_visible(w_binding,1);
-
 
 // I hate C from the bottom of my heart, the subtle bugs created by this 
 // ancient beast creeps in in early stages of development. Just like a 

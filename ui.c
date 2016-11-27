@@ -11,8 +11,10 @@
  */
 #include<stdlib.h>
 
-#include"veta.h"
+#include "veta.h"
 #include "debug.h"
+#include "keyboard_io.h"
+#include "ui.h"
 
 
 void widget_set_visible(widget w,int v);
@@ -20,7 +22,7 @@ void widget_set_visible(widget w,int v);
 widget_t **widgets;
 int n_widgets=0;
 
-void standard_onrelease(widget_t *this,char *s,int *propagate,vkey key,void *psecific){
+void standard_onrelease(widget_t *this,char *s,int *propagate,vkey key,void *pspecific){
 	*propagate=1;
 	uk_log("keypress sent to widget ... ignoring ...");
 }
@@ -52,7 +54,7 @@ void text_draw(widget_t *this,int x0,int y0,int w0,int h0){
 widget add_widget(char *label,
 				void(*draw)(widget_t *this,int x,int y,int w,int h),
 				void(*onclick)(widget_t *w),
-				void(*onrelease)(widget_t *w,char *s,int *p,vkey key)
+				void(*onrelease)(widget_t *w,char *s,int *p,vkey key,void *pspecific)
 				)
 {
 	int n=n_widgets;
