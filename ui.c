@@ -16,7 +16,6 @@
 #include "keyboard_io.h"
 #include "ui.h"
 
-
 void widget_set_visible(widget w,int v);
 
 widget_t **widgets;
@@ -48,7 +47,6 @@ void text_draw(widget_t *this,int x0,int y0,int w0,int h0){
 
 	uk_log("draw text box\n");
 }
-
 
 // By default the widgets are invisible
 widget add_widget(char *label,
@@ -82,8 +80,6 @@ widget add_widget(char *label,
 //typedef enum {HUD_OFFLINE,CONF,CONF_DESC,CONF_BINDING} ui_state_t;
 //ui_state_t ui_state;
 
-
-char *conf_desc="Hello world";
 int keyboard_grabbed=0;
 /*
 typedef struct box_t {
@@ -137,8 +133,13 @@ void draw_normal(){
 	int h=HEIGHT;
 
 //	add_box(w/2,h/2,w/2,h/2,HUD_OFFLINE,CONF);
-	draw_text_box("Configure",w/8,h/16,w-w/8-w/16,h-h/16-h/32,white,c);
+	int w0=w/8;
+	int h0=h/16;
+	int x0=w-w/8-w/16;
+	int y0=h-h/16-h/32;
+	draw_text_box("Configure",w0,h0,x0,y0,white,c);
 }
+
 void draw_conf(){
 	rgb c=get_color(0,0);
 	rgb c1=get_color(1,0);
@@ -166,7 +167,6 @@ void draw_conf_desc(){
 	rgb white=(rgb){255,255,255};
 	w=qw*2;
 	h=qh*2;
-	draw_text_box(conf_desc,w,h/2,qw,qh,white,c1);
 	draw_text_box("OK",qw/2,h/2,qw+w,qh,white,c2);
 }
 void draw_conf_binding(){

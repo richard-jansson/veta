@@ -203,7 +203,7 @@ void ui_init(int w,int h,int x,int y){
 	_set_on_top(dpy,win);
 	_set_sticky(dpy,win);
 
-	_set_alpha(dpy,win,0.8);
+	_set_alpha(dpy,win,0.7);
 
 	XMapWindow(dpy,win);
 	XMoveWindow(dpy,win,x,y);
@@ -631,6 +631,9 @@ void sendkey(void *s,int press_and_release,int toggled){
 }
 
 void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
+	long t0=get_msec();
+
+	uk_log("draw_text_box");
 	XColor fg=_rgb2XColor(c1.r,c1.g,c1.b);
 	XColor bg=_rgb2XColor(c2.r,c2.g,c2.b);
 	XColor white=_rgb2XColor(255,255,255);
@@ -669,16 +672,38 @@ u*/
 //j	char *font_name="-misc-fixed-medium-r-normal--18-120-100-100-c-90-iso8859-1";
 //	char *font_name="-adobe-avant garde gothic-book-o-normal--0-0-0-0-p-0-iso8859-1";
 //	char *font_name="-adobe-avantgarde-medium-i-normal--0-0-0-0-p-0-iso8859-1";
+	
 	char *font_name=FONT;
 	Font font=XLoadFont(dpy,font_name);
 
+
 	XSetFont(dpy,white_gc,font);
+
+	XGCValues v;
+	XGetGCValues(dpy,white_gc,GCFont,&v);
+	XFontStruct *sfont=XQueryFont(dpy,v.font);
 	
-	XDrawString(dpy,win,white_gc,x+w*0.2,y+=h0/2,txt,strlen(txt));
-//	XTextItem ti[]={{txt,strlen(txt),1,font}};
+	int txt_w=0;
+	txt_w=XTextWidth(sfont,txt,strlen(txt));
+	uk_log("txt_w=%i\n",txt_w);
+	
+	int xpos=0;
 
-//	XDrawText(dpy,win,white_gc,x+w*0.2,y+=h0/2,,0);
+	int paddingX=w*0.1;
+	int innerW=w*0.8;
+	int innerH=h*0.8;
 
+	if( txt_w <= innerW ) {
+		xpos=(innerW-txt_w)/2;	
+	}else{
+		xpos=0;
+	}
+
+	XRectangle rects[]={ {0,0,innerW,innerH} };
+	XSetClipRectangles(dpy,white_gc,x,y,rects,1,Unsorted);
+	XDrawString(dpy,win,white_gc,x+paddingX+xpos,y+((h-10)/2),txt,strlen(txt));
+
+	uk_log("draw_text_box in %i msec",get_msec()-t0);
 }
 
 void grabkeyboard(){

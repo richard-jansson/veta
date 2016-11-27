@@ -1,2 +1,6 @@
 when pressing backspace, we have a glitch in the graphics. As if it's rendered twice or whatever.
 Add configuration option for alpha value
+optimize away redraw flickering
+Animate transitions?
+Configure the keys that are drawn on screen 
+Can you run the program in Cygwin?

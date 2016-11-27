@@ -5,6 +5,8 @@
 #include<stdarg.h>
 #include<assert.h>
 #include<time.h>
+#include<sys/time.h>
+
 
 #include"debug.h"
 
@@ -14,6 +16,12 @@ void debug_init(char *path){
 	log_file=fopen(path,"a");
 	assert(log_file);
 	fseek(log_file,0,SEEK_END);
+}
+
+long get_msec(){
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	return tv.tv_sec*1000+tv.tv_usec/1000;
 }
 
 void _uk_log(const char *file,int line,const char *fmt,...){
