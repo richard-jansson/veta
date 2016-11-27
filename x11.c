@@ -1,6 +1,7 @@
 #include<assert.h>
 #include<string.h>
 #include<stdio.h>
+#include<stdint.h>
 
 #include<X11/Xlib.h>
 #include<X11/Xutil.h>
@@ -148,6 +149,8 @@ void ui_init(int w,int h,int x,int y){
 
 	_set_on_top(dpy,win);
 	_set_sticky(dpy,win);
+
+	_set_alpha(dpy,win,0.8);
 
 	XMapWindow(dpy,win);
 	XMoveWindow(dpy,win,x,y);
@@ -301,6 +304,35 @@ void ui_loop(){
 	uk_log("ui_loop end!");
 	writestate(STATE_FILE,lastX,lastY);
 }
+
+void _set_alpha(Display *dpy,Window window,double alpha){
+	XEvent ev;
+	Atom net_wm_state = XInternAtom(dpy,"_NET_WM_WINDOW_OPACITY",False);
+//	Atom net_wm_state_sticky = XInternAtom(dpy,"_NET_WM_STATE_STICKY",False);
+	Window root=DefaultRootWindow(dpy);
+
+	uint32_t calpha=(uint32_t)(alpha*(uint32_t)-1); 
+
+	uk_log("cardinal alpha value = %x %i\n",calpha,calpha);
+
+	ev.xclient.type=ClientMessage;
+	ev.xclient.serial=0;
+	ev.xclient.send_event=True;
+	ev.xclient.display=dpy;
+	ev.xclient.window=window,
+	ev.xclient.message_type=net_wm_state;
+	ev.xclient.format=32;
+
+	ev.xclient.data.l[0]=calpha;
+	ev.xclient.data.l[1]=calpha;
+	ev.xclient.data.l[2]=0;
+	ev.xclient.data.l[3]=0;
+	ev.xclient.data.l[4]=0;
+
+	XSendEvent(dpy,root,False, SubstructureRedirectMask|SubstructureNotifyMask, &ev);
+
+}
+
 void _set_sticky(Display *dpy,Window window){
 	XEvent ev;
 	Atom net_wm_state = XInternAtom(dpy,"_NET_WM_STATE",False);

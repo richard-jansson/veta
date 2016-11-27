@@ -1,1 +1,2 @@
 when pressing backspace, we have a glitch in the graphics. As if it's rendered twice or whatever.
+Add configuration option for alpha value
