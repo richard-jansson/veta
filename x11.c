@@ -747,7 +747,7 @@ void ungrabkeys(){
 		int mod=0;
 		for(int j=0;j<8;j++){
 			if( mod & keybindings[i].modifiers || mod == 0 ){
-				XGrabKey(dpy,keybindings[i].keycode,mod,root,False,GrabModeAsync,GrabModeAsync);
+				XUngrabKey(dpy,keybindings[i].keycode,mod,root);
 			}
 			mod=!mod?1:mod*2;
 		}
