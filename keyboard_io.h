@@ -31,6 +31,7 @@ typedef struct _event{
 	int keycode;
 	eventtype type;
 	int cell;
+	int modifiers;
 } event_t;
 
 keyboardio * init_keyboardio();

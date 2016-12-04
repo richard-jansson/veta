@@ -5,8 +5,8 @@ LFLAGS=`pkg-config --libs x11 xtst` -lm -g
 #CFLAGS_DEBUG=-g `pkg-config --cflags x11 xtst` -DDEBUG 
 #LFLAGS=`pkg-config --libs x11 xtst` -lm -pg
 
-SRC=veta.c debug.c x11.c conf.c cell.c color.c ui.c	ui_logic.c
-OBJ=veta.o debug.o x11.o conf.o cell.o color.o ui.o ui_logic.o
+SRC=veta.c debug.c x11.c conf.c cell.c color.c ui.c ui_logic.c x11_getmodifiers.c
+OBJ=veta.o debug.o x11.o conf.o cell.o color.o ui.o ui_logic.o x11_getmodifiers.o
 
 
 all: veta

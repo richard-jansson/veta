@@ -166,7 +166,15 @@ void _set_sticky(Display *dpy,Window window){
 
 }
 
+void setup_modifiers(){
+	for(int i=0;i<sizeof(keybindings)/sizeof(event_t);i++){
+		keybindings[i].modifiers=get_modifiers(keybindings[i].keycode);
+	}
+}
+
 void ui_init(int w,int h,int x,int y){
+	setup_modifiers();
+
 	_w=w;
 	_h=h;
 	winX=x;
@@ -221,8 +229,10 @@ void ui_init(int w,int h,int x,int y){
 
 	kbio.start=kbio.stop=kbio.n=0;
 	_setupkeymap();
-
-	_grabkeys();
+	
+			
+	grabkeys();
+//	grabkeyboard();
 }
 
 // Should window be a pointer really?
@@ -261,6 +271,7 @@ void refresh(){
 	ev.type=Expose;
 
 	XSendEvent(dpy,win,1,0,&ev);
+	XFlush(dpy);
 }
 
 void log_platformspecific(void  *data){
@@ -561,15 +572,15 @@ int _get_keycode_count(KeySym *keymap,int min,int max,int keysyms_per_keycode){
 	max_keysyms=count_keysyms;
 	return count_keysyms;
 }
-
+/*
 void _grabkeys(){
 	Window root = DefaultRootWindow(dpy);
 	// Shift, Lock, ctrl
 	unsigned int modifiers=0b100;
 	uk_log("Grabbing keys");
 	for(int i=0;i<sizeof(keybindings)/sizeof(event_t);i++){
-//		uk_log("modifiers = 0x%x\n",modifiers);
-		XGrabKey(dpy,keybindings[i].keycode,0,root,False,GrabModeAsync,GrabModeAsync);
+
+//		XGrabKey(dpy,keybindings[i].keycode,0,root,False,GrabModeAsync,GrabModeAsync);
 		XGrabKey(dpy,keybindings[i].keycode,1,root,False,GrabModeAsync,GrabModeAsync);
 		XGrabKey(dpy,keybindings[i].keycode,2,root,False,GrabModeAsync,GrabModeAsync);
 		XGrabKey(dpy,keybindings[i].keycode,4,root,False,GrabModeAsync,GrabModeAsync);
@@ -588,14 +599,15 @@ void _ungrabkeys(){
 	Window root = DefaultRootWindow(dpy);
 	for(int i=0;i<sizeof(keybindings)/sizeof(event_t);i++){
 		XUngrabKey(dpy,keybindings[i].keycode,0,root);
-/*		XUngrabKey(dpy,keybindings[i].keycode,1,root);
+		XUngrabKey(dpy,keybindings[i].keycode,1,root);
 		XUngrabKey(dpy,keybindings[i].keycode,2,root);
-		XUngrabKey(dpy,keybindings[i].keycode,4,root);*/
-//		XUngrabKey(dpy,keybindings[i].keycode,8,root);
-//		XUngrabKey(dpy,keybindings[i].keycode,16,root);
+		XUngrabKey(dpy,keybindings[i].keycode,4,root);
+		XUngrabKey(dpy,keybindings[i].keycode,8,root);
+		XUngrabKey(dpy,keybindings[i].keycode,16,root);
 	}
 	XFlush(dpy);
 }
+*/
 event_t *_get_event_from_keycode(int keycode){
 	for(int i=0;i<sizeof(keybindings)/sizeof(event_t);i++){
 		if(keybindings[i].keycode==keycode) return &keybindings[i];
@@ -633,7 +645,7 @@ void sendkey(void *s,int press_and_release,int toggled){
 void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
 	long t0=get_msec();
 
-	uk_log("draw_text_box");
+//	uk_log("draw_text_box");
 	XColor fg=_rgb2XColor(c1.r,c1.g,c1.b);
 	XColor bg=_rgb2XColor(c2.r,c2.g,c2.b);
 	XColor white=_rgb2XColor(255,255,255);
@@ -685,7 +697,7 @@ u*/
 	
 	int txt_w=0;
 	txt_w=XTextWidth(sfont,txt,strlen(txt));
-	uk_log("txt_w=%i\n",txt_w);
+//	uk_log("txt_w=%i\n",txt_w);
 	
 	int xpos=0;
 
@@ -702,12 +714,10 @@ u*/
 	XRectangle rects[]={ {0,0,innerW,innerH} };
 	XSetClipRectangles(dpy,white_gc,x,y,rects,1,Unsorted);
 	XDrawString(dpy,win,white_gc,x+paddingX+xpos,y+((h-10)/2),txt,strlen(txt));
-
-	uk_log("draw_text_box in %i msec",get_msec()-t0);
 }
 
 void grabkeyboard(){
-	XGrabKeyboard(dpy,win,0,GrabModeAsync,GrabModeAsync,CurrentTime);
+	XGrabKeyboard(dpy,win,1,GrabModeAsync,GrabModeAsync,CurrentTime);
 }
 
 void ungrabkeyboard(){
@@ -715,32 +725,32 @@ void ungrabkeyboard(){
 }
 
 void grabkeys(){
-	Window root = DefaultRootWindow(dpy);
-	// Shift, Lock, ctrl
-	unsigned int modifiers=0b100;
 	uk_log("Grabbing keys");
-	/* Of what is going on here. I have genuienly no idea! It just works for me */
+	Window root = DefaultRootWindow(dpy);
 	for(int i=0;i<sizeof(keybindings)/sizeof(event_t);i++){
-//		uk_log("modifiers = 0x%x\n",modifiers);
-		XGrabKey(dpy,keybindings[i].keycode,0,root,False,GrabModeAsync,GrabModeAsync);
-		XGrabKey(dpy,keybindings[i].keycode,1,root,False,GrabModeAsync,GrabModeAsync);
-		XGrabKey(dpy,keybindings[i].keycode,2,root,False,GrabModeAsync,GrabModeAsync);
-		XGrabKey(dpy,keybindings[i].keycode,4,root,False,GrabModeAsync,GrabModeAsync);
-//		XGrabKey(dpy,keybindings[i].keycode,8,root,False,GrabModeAsync,GrabModeAsync);
-//		XGrabKey(dpy,keybindings[i].keycode,16,root,False,GrabModeAsync,GrabModeAsync);
+		int mod=0;
+		for(int j=0;j<8;j++){
+			if( mod & keybindings[i].modifiers || mod == 0 ){
+				XGrabKey(dpy,keybindings[i].keycode,mod,root,False,GrabModeAsync,GrabModeAsync);
+			}
+			mod=!mod?1:mod*2;
+		}
 	}
+// FIXME: Shouldn't be here if it is function must be renamed
+	XGrabButton(dpy,0,0,win,False, 0x0,GrabModeAsync,GrabModeAsync,None,None);
 	XFlush(dpy);
 }
 void ungrabkeys(){
 	uk_log("Ungrabbing keys");
 	Window root = DefaultRootWindow(dpy);
 	for(int i=0;i<sizeof(keybindings)/sizeof(event_t);i++){
-		XUngrabKey(dpy,keybindings[i].keycode,0,root);
-/*		XUngrabKey(dpy,keybindings[i].keycode,1,root);
-		XUngrabKey(dpy,keybindings[i].keycode,2,root);
-		XUngrabKey(dpy,keybindings[i].keycode,4,root);*/
-//		XUngrabKey(dpy,keybindings[i].keycode,8,root);
-//		XUngrabKey(dpy,keybindings[i].keycode,16,root);
+		int mod=0;
+		for(int j=0;j<8;j++){
+			if( mod & keybindings[i].modifiers || mod == 0 ){
+				XGrabKey(dpy,keybindings[i].keycode,mod,root,False,GrabModeAsync,GrabModeAsync);
+			}
+			mod=!mod?1:mod*2;
+		}
 	}
 	XFlush(dpy);
 }

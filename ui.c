@@ -72,7 +72,7 @@ widget add_widget(char *label,
 	widgets[n]->visible=0;
 	
 	n_widgets++;
-	if(label) uk_log("added %s = %i\n",label,(int)n); 
+	if(label) uk_log("added %s = %i",label,(int)n); 
 	return (widget)n;
 }
 

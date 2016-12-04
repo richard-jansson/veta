@@ -81,4 +81,5 @@ void veta_render();
 /* Conf  */
 void writestate(char *path,int x,int y);
 
-
+/* getmodifiers */
+int get_modifiers(int keycode);
