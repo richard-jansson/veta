@@ -28,7 +28,6 @@ int _test_grabkey(int kc,int mod){
 	XGrabKey(dpy,kc,mod,root,False,GrabModeAsync,GrabModeAsync);
 	XFlush(dpy);
 
-
 	// Since XNextEvent is nonblocking and the request is apparently not processed until it's run
 	// we'll have to send some sort of event to the X server or simply wait for it to be generated
 	// in some other way.
@@ -42,7 +41,6 @@ int _test_grabkey(int kc,int mod){
 
 	XSendEvent(dpy,root,False,SubstructureRedirectMask|SubstructureNotifyMask,&ev);
 	XFlush(dpy);
-	// End create window 
 
 	XNextEvent(dpy,&ev);
 }
@@ -59,6 +57,8 @@ int _testkey(int kc,int mod){
 			return 0;
 		}
 	}else{
+	// Close stderr since we are not interested in the errors for this process
+		close(2);
 		_test_grabkey(kc,mod);
 		exit(0);
 	}
