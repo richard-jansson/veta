@@ -151,7 +151,7 @@ void draw_conf(){
 
 	draw_box(w,h,qw,qh, c.r,c.g,c.b);	
 
-	draw_text_box("Description",w,h/2,qw,qh, white,c1);
+//	draw_text_box("Description",w,h/2,qw,qh, white,c1);
 	draw_text_box("Binding",w,h/2,qw,qh+h/2, white,c2);
 }
 
@@ -224,6 +224,7 @@ void ui2_handle_click(int mx,int my){
  *
  */ 
 void render_ui2(){
+	return;
 	uk_log("render ui2");
 	void (*f)(widget_t *this,int x,int y,int w,int h);
 
