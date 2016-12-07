@@ -737,7 +737,7 @@ void grabkeys(){
 		}
 	}
 // FIXME: Shouldn't be here if it is function must be renamed
-	XGrabButton(dpy,0,0,win,False, 0x0,GrabModeAsync,GrabModeAsync,None,None);
+//	XGrabButton(dpy,0,0,win,False, 0x0,GrabModeAsync,GrabModeAsync,None,None);
 	XFlush(dpy);
 }
 void ungrabkeys(){
