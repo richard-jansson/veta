@@ -1,6 +1,6 @@
 CC=gcc
 VER=
-CFLAGS=-g `pkg-config --cflags x11 xtst` -DDEBUG
+CFLAGS=-g `pkg-config --cflags x11 xtst` --std=gnu11
 LFLAGS=`pkg-config --libs x11 xtst` -lm -g
 #CFLAGS_DEBUG=-g `pkg-config --cflags x11 xtst` -DDEBUG 
 #LFLAGS=`pkg-config --libs x11 xtst` -lm -pg
