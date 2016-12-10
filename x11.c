@@ -7,7 +7,6 @@
 #include<X11/Xutil.h>
 
 #include<X11/extensions/XTest.h>
-#include<X11/extensions/Xdbe.h>
 
 #include "keyboard_io.h"
 #include "debug.h"
