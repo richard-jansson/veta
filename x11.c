@@ -7,6 +7,7 @@
 #include<X11/Xutil.h>
 
 #include<X11/extensions/XTest.h>
+#include<X11/extensions/Xdbe.h>
 
 #include "keyboard_io.h"
 #include "debug.h"
@@ -15,12 +16,19 @@
 
 #define FORMAT "%s %i %i %i\n"
 
+int start_time=0;
+int exposes=0;
 int winX=0,winY=0;
 int lastMX=0,lastMY=0;
 void get_last_click(int *x,int *y){
 	*x=lastMX;
 	*y=lastMY;
 }
+
+/* Font stuff */
+Font font;
+XFontStruct *sfont;
+
 /* Global variables */
 FILE *sym_file=NULL;
 
@@ -100,6 +108,8 @@ int screen;
 GC       gc;
 XVisualInfo visualinfo ;
 Window win=0,root,win_parent=0;
+Pixmap double_buffer;
+Drawable d;
 int x,y,_w,_h;
 int lastX=0,lastY=0;
 int running=1;
@@ -172,7 +182,37 @@ void setup_modifiers(){
 	}
 }
 
+
+
+// Setup double buffering if it's available
+int setup_dbe(){
+	assert(dpy);
+	int maj,min;
+	if(XdbeQueryExtension(dpy,&maj,&min)){
+		uk_log("DBE extension is enabled (%i.%i)",maj,min);
+	}else{
+		uk_log("DBE extension is not enabled!");
+	}
+}
+
+
+void load_font(){
+	char *font_name=FONT;
+
+	Font font=XLoadFont(dpy,font_name);
+	XSetFont(dpy,gc,font);
+
+	XGCValues v;
+	XGetGCValues(dpy,gc,GCFont,&v);
+	sfont=XQueryFont(dpy,v.font);
+}
+
+void setup_gc(){
+}
+
+
 void ui_init(int w,int h,int x,int y){
+	start_time=get_msec();
 	setup_modifiers();
 
 	_w=w;
@@ -183,6 +223,8 @@ void ui_init(int w,int h,int x,int y){
 	dpy=XOpenDisplay("");
 	screen=DefaultScreen(dpy);
 	root=DefaultRootWindow(dpy);
+
+	setup_dbe();
 
 	XMatchVisualInfo(dpy, screen, 32, TrueColor, &visualinfo);
 
@@ -204,7 +246,32 @@ void ui_init(int w,int h,int x,int y){
 		visualinfo.visual,
 		CWColormap|CWEventMask|CWBackPixmap|CWBorderPixel,
 		&attr);
+
+
+	XWindowAttributes wa;
+
+	XGetWindowAttributes(dpy,win,&wa);
+
 	gc = XCreateGC(dpy,win,0,0);
+	double_buffer=XCreatePixmap(dpy,win,wa.width,wa.height,wa.depth);
+
+	XColor black=_rgb2XColor(255,255,255);
+	XAllocColor(dpy,attr.colormap,&black);
+	XSetForeground(dpy,gc,black.pixel);
+	XFillRectangle(dpy,double_buffer,gc,0,0,wa.width,wa.height);
+
+
+
+	d=double_buffer;
+
+	uk_log("Created pixmap = %x",double_buffer);
+//	d=win;
+
+
+	XGetWindowAttributes(dpy,win,&wa);
+
+
+	load_font();
 
 	uk_log("window = %x root = %x",win,root);
 
@@ -283,13 +350,48 @@ void log_platformspecific(void  *data){
 			sym->modifier);
 }
 
-void ui_loop(){
+void send_expose_event(Window win){
+	XEvent ev;
+	ev.xclient.type=Expose;
+	ev.xclient.serial=0;
+	ev.xclient.send_event=True;
+	ev.xclient.display=dpy;
+	ev.xclient.window=win;
+	ev.xclient.message_type=0;
+	ev.xclient.format=32;
+
+	XSendEvent(dpy,win,True,SubstructureRedirectMask|SubstructureNotifyMask,&ev);
+	XFlush(dpy);
+
+}
+
+void send_empty_event(Window win){
+	XClientMessageEvent ev;
+
+	ev.type=ClientMessage;
+	ev.serial=0;
+	ev.send_event=True;
+	ev.display=dpy;
+	ev.window=win;
+	ev.message_type=XInternAtom(dpy,"fullthrottle",1);
+	ev.format=32;
+
+	ev.data.l[0]=0x42;
+	ev.data.l[1]=0x42;
+	ev.data.l[2]=0x42;
+	ev.data.l[3]=0x42;
+
+	int r=XSendEvent(dpy,win, 0,0, (XEvent *)&ev);
+	XFlush(dpy);
+}
+
+void ui_loop(int full_throttle){
 	Window root_return,*children_return,parent;
 	unsigned int n_children;
 	XEvent ev;
 	event_t *v_event;
 	int i;
-	XWindowAttributes winattr;
+	XWindowAttributes winattr,wa;
 	int x,y;
 	int propagate;
 	char keydown[16];
@@ -300,8 +402,20 @@ void ui_loop(){
 
 	vkey key=ANY;
 
+	if(full_throttle){
+		send_empty_event(win);
+	}
+
+	XColor reds,redx;
+
+	XAllocNamedColor(dpy,
+                     DefaultColormapOfScreen(DefaultScreenOfDisplay(dpy)),
+	                     "red",
+														                     &reds, &redx);
+
 	while(running){
 		XNextEvent(dpy,&ev);
+
 		switch(ev.type){
 			case ButtonRelease:
 			case ButtonPress:
@@ -344,11 +458,18 @@ void ui_loop(){
 				// A new window on my machine. Wonder why?
 //				running=0;
 				break;
+			case ClientMessage:
+				if(ev.xclient.data.l[0]!=0x42 || ! full_throttle) break;
+				send_empty_event(win);
 			case Expose:
-/*				uk_log("Expose");
-				_draw_box(_w,_h,0,0,_rgb2XColor(128,128,128));*/
+				exposes++;	
+				if((exposes%10)==0)
+					uk_log("eps=%i",1000*exposes/(get_msec()-start_time));
 				onrender();
-				XFlush(dpy);
+
+				reset_clip();
+				XCopyArea(dpy,double_buffer,win,gc,0,0,WIDTH,HEIGHT,0,0);
+//				XFlush(dpy);
 				break;
 			case ReparentNotify:
 				uk_log("Reparent win=%x par=%x",ev.xreparent.window,ev.xreparent.parent);
@@ -436,15 +557,15 @@ XColor _rgb2XColor(int r,int g,int b){
 }
 
 void draw_box(int w,int h,int x,int y,int r,int g,int b){
-	XColor bg=_rgb2XColor(r,g,b);
-	GC bg_gc=XCreateGC(dpy,win,0,0);
+	reset_clip();
+	XColor bg=_rgb2XColor(0,0,0);
+//	GC bg_gc=XCreateGC(dpy,win,0,0);
 
 	XAllocColor(dpy,attr.colormap,&bg);
 	
-	XSetForeground(dpy,bg_gc,bg.pixel);
-
-	XSetFillStyle(dpy,bg_gc,FillSolid);
-	XFillRectangle(dpy,win,bg_gc,x,y,w,h);
+	XSetForeground(dpy,gc,bg.pixel);
+	XSetFillStyle(dpy,gc,FillSolid);
+	XFillRectangle(dpy,d,gc,x,y,w,h);
 }
 void _get_unique_keycodes(KeySym *keymap,int min,int max,int keysyms_per_keycode,int pass){
 	// We really shouldn't skip all modifiers after 3
@@ -642,36 +763,7 @@ void sendkey(void *s,int press_and_release,int toggled){
 	grabkeys();
 }
 
-void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
-	long t0=get_msec();
-
-//	uk_log("draw_text_box");
-	XColor fg=_rgb2XColor(c1.r,c1.g,c1.b);
-	XColor bg=_rgb2XColor(c2.r,c2.g,c2.b);
-	XColor white=_rgb2XColor(255,255,255);
-	assert(txt);
-
-	int x0,y0,w0,h0;
-	x0=x;
-	y0=y;
-	w0=w;
-	h0=h;
-
-	draw_box(w,h,x,y,c2.r,c2.g,c2.b);
-//	draw_box(w0,h0,x0,y0,c2.r,c2.g,c2.b);
-
-	GC fg_gc=XCreateGC(dpy,win,0,0);
-	GC white_gc=XCreateGC(dpy,win,0,0);
-	XAllocColor(dpy,attr.colormap,&white);
-	
-	XSetForeground(dpy,white_gc,white.pixel);
-	XDrawRectangle(dpy,win,white_gc,x,y,w,h);
-
-	XSetForeground(dpy,fg_gc,fg.pixel);
-
-//	uk_log("Draw text!!!!");
-
-/* Please, pick one! 
+/* FIXME: Please, pick one! 
 	char **fonts;
 	int n_fonts;
 	fonts=XListFonts(dpy,"*",2000,&n_fonts);
@@ -684,21 +776,17 @@ u*/
 //j	char *font_name="-misc-fixed-medium-r-normal--18-120-100-100-c-90-iso8859-1";
 //	char *font_name="-adobe-avant garde gothic-book-o-normal--0-0-0-0-p-0-iso8859-1";
 //	char *font_name="-adobe-avantgarde-medium-i-normal--0-0-0-0-p-0-iso8859-1";
-	
-	char *font_name=FONT;
-	Font font=XLoadFont(dpy,font_name);
 
+void reset_clip(){
+	XRectangle rects[]={ {0,0,WIDTH,HEIGHT} };
+	XSetClipRectangles(dpy,gc,x,y,rects,1,Unsorted);
+}
 
-	XSetFont(dpy,white_gc,font);
-
-	XGCValues v;
-	XGetGCValues(dpy,white_gc,GCFont,&v);
-	XFontStruct *sfont=XQueryFont(dpy,v.font);
-	
+void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
+	long t0=get_msec(),t1;
 	int txt_w=0;
 	txt_w=XTextWidth(sfont,txt,strlen(txt));
-//	uk_log("txt_w=%i\n",txt_w);
-	
+
 	int xpos=0;
 
 	int paddingX=w*0.1;
@@ -711,9 +799,38 @@ u*/
 		xpos=0;
 	}
 
-	XRectangle rects[]={ {0,0,innerW,innerH} };
-	XSetClipRectangles(dpy,white_gc,x,y,rects,1,Unsorted);
-	XDrawString(dpy,win,white_gc,x+paddingX+xpos,y+((h-10)/2),txt,strlen(txt));
+
+	XRectangle rects[]={ {0,0,w+1,h+1} };
+	XSetClipRectangles(dpy,gc,x,y,rects,1,Unsorted);
+
+	XColor fg=_rgb2XColor(c1.r,c1.g,c1.b);
+	XColor bg=_rgb2XColor(c2.r,c2.g,c2.b);
+	XColor white=_rgb2XColor(255,255,255);
+	assert(txt);
+
+	int x0,y0,w0,h0;
+
+/*	GC fg_gc=XCreateGC(dpy,d,0,0);
+	GC bg_gc=XCreateGC(dpy,d,0,0);
+	GC white_gc=XCreateGC(dpy,d,0,0);
+	*/
+
+	d=double_buffer;
+
+	XAllocColor(dpy,attr.colormap,&white);
+	XAllocColor(dpy,attr.colormap,&bg);
+	
+	XSetForeground(dpy,gc,bg.pixel);
+	XSetFillStyle(dpy,gc,FillSolid);
+	XFillRectangle(dpy,d,gc,x,y,w,h);
+
+	XSetForeground(dpy,gc,white.pixel);
+	XSetBackground(dpy,gc,white.pixel);
+	XDrawRectangle(dpy,d,gc,x,y,w,h);
+
+	XSetForeground(dpy,gc,white.pixel);
+	XDrawString(dpy,d,gc,x+paddingX+xpos,y+((h-10)/2),txt,strlen(txt));
+
 }
 
 void grabkeyboard(){
@@ -737,7 +854,7 @@ void grabkeys(){
 		}
 	}
 // FIXME: Shouldn't be here if it is function must be renamed
-	XGrabButton(dpy,0,0,win,False, 0x0,GrabModeAsync,GrabModeAsync,None,None);
+//	XGrabButton(dpy,0,0,win,False, 0x0,GrabModeAsync,GrabModeAsync,None,None);
 	XFlush(dpy);
 }
 void ungrabkeys(){

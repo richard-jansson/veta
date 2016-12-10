@@ -145,6 +145,7 @@ void veta_click(int x,int y){
 int main(int argc,char *argv[]){
 	debug_init(LOG_FILE);
 	uk_log("build: %s",BUILD);
+	int full_throttle=0;
 
 	symbol_mode=LOAD;
 	symbol_file=SYMBOLS_FILE;
@@ -164,6 +165,8 @@ int main(int argc,char *argv[]){
 			selection_mode=ZOOM;
 		}else if(!strcmp("--highlight",argv[i])){
 			selection_mode=HIGHLIGHT;
+		}else if(!strcmp("--graphicsopt",argv[i])){
+			full_throttle=1;
 		}else{
 			usage(argv[0]);
 		}
@@ -185,6 +188,6 @@ int main(int argc,char *argv[]){
 
 	ui2_add_widgets();
 
-	ui_loop();
+	ui_loop(full_throttle);
 	return 1;
 }
