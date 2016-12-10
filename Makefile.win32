@@ -1,0 +1,25 @@
+PREFIX=x86_64-w64-mingw32
+CC=$(PREFIX)-gcc
+
+CFLAGS=-g --std=gnu11 -DWINDOWS -DDEBUG
+LFLAGS=-lm -g 
+#CFLAGS_DEBUG=-g `pkg-config --cflags x11 xtst` -DDEBUG 
+#LFLAGS=`pkg-config --libs x11 xtst` -lm -pg
+
+SRC=veta.c debug.c win.c conf.c cell.c color.c ui.c ui_logic.c 
+OBJ=veta.o debug.o win.o conf.o cell.o color.o ui.o ui_logic.o
+
+
+all: veta
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+ver.h:
+	./ver.sh > ver.h
+
+veta: ver.h $(OBJ) 
+	$(CC) -o $@.exe $^ $(LFLAGS) $(OBJS)
+
+clean:
+	rm -f $(OBJ) ver.h

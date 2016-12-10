@@ -4,6 +4,12 @@
 #include<assert.h>
 #include<time.h>
 
+#ifdef WINDOWS 
+int random(){
+	return rand();
+}
+#endif
+
 #include"color.h"
 
 int num_colors,color_initialized=0;;
