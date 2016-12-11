@@ -1,3 +1,8 @@
+#ifdef WINDOWS 
+#include<windows.h>
+#include"winapi.h"
+#endif 
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<assert.h>
@@ -15,7 +20,12 @@ cell *root;
 /* Configuration options */
 char *symbol_file=NULL; 
 sym_mode_t symbol_mode;
+
+#ifdef WINDOWS
+sel_mode_t selection_mode=HIGHLIGHT;
+#else
 sel_mode_t selection_mode=ZOOM;
+#endif
 /* end of configuration options */
 
 void usage(char *cmd){
@@ -119,7 +129,7 @@ void veta_render(){
 //	recurse_cells(root,render_cell,&b);
 
 	uk_log("draw_box");
-	draw_box(WIDTH,HEIGHT,0,0,0,0,0);
+//	draw_box(WIDTH,HEIGHT,0,0,0,0,0);
 	uk_log("render_cell");
 
 	if(selection_mode==ZOOM){
@@ -142,6 +152,20 @@ void veta_render(){
 void veta_click(int x,int y){
 }
 
+#ifdef WINDOWS 
+int WINAPI WinMain(HINSTANCE h,HINSTANCE hprev,LPSTR cmdline,int n){
+	debug_init(LOG_FILE);
+	uk_log("windows build: %s",BUILD);
+
+	int full_throttle=0;
+	nCmdShow=n;
+
+	hinstance=h;
+	symbol_mode=LOAD;
+
+	// FIXME temporary debug shit
+
+#else
 int main(int argc,char *argv[]){
 	debug_init(LOG_FILE);
 	uk_log("build: %s",BUILD);
@@ -171,6 +195,7 @@ int main(int argc,char *argv[]){
 			usage(argv[0]);
 		}
 	}
+#endif
 
 	state *st=readstate(STATE_FILE);
 
@@ -182,6 +207,8 @@ int main(int argc,char *argv[]){
 	ui_haskeymap(veta_symbolsloaded);
 	ui_render(veta_render);
 
+
+// Set up low level graphics and load the keymap
 	ui_init(WIDTH,HEIGHT,st->x,st->y);
 
 	ui2_init();

@@ -65,7 +65,7 @@ int _print_color(cell *cell,void *data){
 
 int _colorize(cell *cell,void *data){
 	int *cell_n=(int*)data;
-	
+
 	cell->color=get_color(*cell_n,0);
 	cell->color_selected=get_color(*cell_n,1);
 
@@ -179,6 +179,7 @@ void clear_selection(cell *root){
 
 // I've omitted to make this work at an arbitrary level. According to my mental specification.
 cell *get_deepest_cell(cell *root){
+	assert(root);
 	cell *deepest=root;
 	for(int i=0;i<root->nchildren;i++){
 		if(root->children[i] && root->children[i]->selected) deepest=root->children[i];

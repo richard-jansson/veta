@@ -2,7 +2,7 @@ PREFIX=x86_64-w64-mingw32
 CC=$(PREFIX)-gcc
 
 CFLAGS=-g --std=gnu11 -DWINDOWS -DDEBUG
-LFLAGS=-lm -g 
+LFLAGS=-lm -g -lgdi32
 #CFLAGS_DEBUG=-g `pkg-config --cflags x11 xtst` -DDEBUG 
 #LFLAGS=`pkg-config --libs x11 xtst` -lm -pg
 
