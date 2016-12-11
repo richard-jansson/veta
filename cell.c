@@ -150,6 +150,7 @@ int select_cell(cell *root, int cell){
 	}
 
 	if(deepest_selected_cell->nchildren){
+		if( cell < 0 || cell >= deepest_selected_cell->nchildren) return 1;
 		deepest_selected_cell->children[cell]->selected=1;
 	}
 
