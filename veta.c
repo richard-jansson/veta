@@ -22,7 +22,8 @@ char *symbol_file=NULL;
 sym_mode_t symbol_mode;
 
 #ifdef WINDOWS
-sel_mode_t selection_mode=HIGHLIGHT;
+sel_mode_t selection_mode=ZOOM;
+//sel_mode_t selection_mode=HIGHLIGHT;
 #else
 sel_mode_t selection_mode=ZOOM;
 #endif
@@ -126,11 +127,7 @@ void veta_render(){
 	b.w=WIDTH;
 	b.h=HEIGHT;
 
-//	recurse_cells(root,render_cell,&b);
-
-	uk_log("draw_box");
-//	draw_box(WIDTH,HEIGHT,0,0,0,0,0);
-	uk_log("render_cell");
+	draw_box(WIDTH,HEIGHT,0,0,0,0,0);
 
 	if(selection_mode==ZOOM){
 		cell *deepest=get_deepest_cell(root);
