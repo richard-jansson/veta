@@ -8,3 +8,6 @@ commit_msg
 gmon.out
 ver.h
 veta.exe
+debug.sh
+backtrace.txt
+nm

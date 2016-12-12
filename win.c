@@ -3,9 +3,12 @@
  *
  * A good reference for GDI code:
  * http://zetcode.com/gui/winapi/gdi/
+ *
  */
 
 #include <windows.h>
+
+#include <assert.h>
 
 #include "debug.h"
 #include "winapi.h"
@@ -21,26 +24,28 @@ int nCmdShow;
 // Configure keybindings
 event_t kbio_undefined={0,UNDEFINED,-1};
 event_t keybindings[]={
-	{81,SELECT_CELL,0},
-	{87,SELECT_CELL,1},
-	{68,SELECT_CELL,2},
-	{82,SELECT_CELL,3},
+	{'Q',SELECT_CELL,0},
+	{'W',SELECT_CELL,1},
+	{'E',SELECT_CELL,2},
+	{'R',SELECT_CELL,3},
 
-	{69,SELECT_CELL,4},
-	{83,SELECT_CELL,5},
-	{68,SELECT_CELL,6},
-	{70,SELECT_CELL,7},
+	{'A',SELECT_CELL,4},
+	{'S',SELECT_CELL,5},
+	{'D',SELECT_CELL,6},
+	{'F',SELECT_CELL,7},
 
-	{90,SELECT_CELL,8},
-	{88,SELECT_CELL,9},
-	{67,SELECT_CELL,10},
-	{86,SELECT_CELL,11},
+	{'Z',SELECT_CELL,8},
+	{'X',SELECT_CELL,9},
+	{'Z',SELECT_CELL,10},
+	{'V',SELECT_CELL,11},
 
 	{160,RESET,-1}, // Shift 
 	{192,QUIT,-1}, // Section
 	{0,SWITCH_TREE,-1}}; 
 
 // private
+int lastsent;
+symbol *symbol_list;
 int running;
 HWND _win;
 MSG _msg;
@@ -84,33 +89,26 @@ LRESULT CALLBACK _win_callback(HWND win,UINT msg,WPARAM w,LPARAM l){
 
 void _setupkeymap(){
 // FIXME: get the symbols from the current layout?
-	symbol *symbol_list=malloc(sizeof(symbol)*(26*2+10));
-	for(int i=0;i<26;i++){
-		symbol_list[i].name=malloc(2);
-		symbol_list[i].name[0]='a'+i;
-		symbol_list[i].name[1]='\0';
-		symbol_list[i].data=NULL;
+	int count='Z'-'A'+1;
+	symbol_list=malloc(sizeof(symbol)*count);
+
+	for(int i=0;i<count;i++){
+		char *name=malloc(2);
+		name[0]='A'+i;
+		name[1]='\0';
+
+		symbol_list[i].name=name;
+
 		symbol_list[i].mode=TOGGLE;
 		symbol_list[i].toggled=0;
-	}
-	for(int i=0;i<26;i++){
-		symbol_list[i+25].name=malloc(2);
-		symbol_list[i+25].name[0]='A'+i;
-		symbol_list[i+25].name[1]='\0';
-		symbol_list[i+25].data=NULL;
-		symbol_list[i+25].mode=TOGGLE;
-		symbol_list[i+25].toggled=0;
-	}
-	for(int i=0;i<10;i++){
-		symbol_list[i+51].name=malloc(2);
-		symbol_list[i+51].name[0]='0'+i;
-		symbol_list[i+51].name[1]='\0';
-		symbol_list[i+51].data=NULL;
-		symbol_list[i+51].mode=TOGGLE;
-		symbol_list[i+51].toggled=0;
+
+		symbol_win *s=malloc(sizeof(symbol_win));
+		s->c='A'+i;
+		symbol_list[i].data=s;
+
 	}
 
-	onhaskeymap(symbol_list,26*2+10);
+	onhaskeymap(symbol_list,count);
 }
 
 event_t *_get_event_from_keycode(int keycode){
@@ -126,14 +124,35 @@ LRESULT CALLBACK _keyboard_hook(int n,WPARAM w,LPARAM l){
 	event_t *ev;
 	if(n==HC_ACTION){
 		switch(w){
+			case WM_KEYDOWN:	
 			case WM_KEYUP:
 				p=(PKBDLLHOOKSTRUCT)l;
+
+				propagate=1;
+				uk_log("event");
 				ev=_get_event_from_keycode(p->vkCode);
 
-				if(ev->type!=UNDEFINED){
-					propagate=0;
+				uk_log("last=%i vkcode=%i",toupper(lastsent),p->vkCode);	
+
+				if(toupper(lastsent)==p->vkCode && w==WM_KEYDOWN && ev->type!=UNDEFINED){
+					uk_log("not receiving keys veta sent");
+					return CallNextHookEx(NULL,n,w,l);
+				}
+				if(toupper(lastsent)==p->vkCode && w==WM_KEYUP && ev->type!=UNDEFINED){
+					uk_log("not receiving keys veta sent");
+					lastsent=-1;
+					return CallNextHookEx(NULL,n,w,l);
+				}
+
+				if(w==WM_KEYUP && ev->type!=UNDEFINED){
+					uk_log("get event type");
 					onevent(ev);
 				}
+				if(ev->type!=UNDEFINED){
+					uk_log("event is defined not sending on");
+					propagate=0;
+				}
+				uk_log("keyup done");
 				break;
 			default:
 				break;
@@ -201,7 +220,14 @@ void ui_loop(int full_throttle){
 
 /* platform specific keyboard functions */
 void sendkey(void *s,int press_and_release,int toggled){
-	uk_log("sendkey not implemented yet");
+	symbol_win *d=(symbol_win *)s;
+	assert(d);
+
+	lastsent=d->c;
+
+// Send the key
+	keybd_event(d->c,0,0,0);	
+	keybd_event(d->c,0,KEYEVENTF_KEYUP,0);
 }
 void grabkeyboard(){
 	uk_log("grabkeyboard not implemented yet");
@@ -220,6 +246,8 @@ void draw_box(int w,int h,int x,int y,int r,int g,int b){
 	SelectObject(_hdc,brush);
 
 	Rectangle(_hdc,x,y,x+w,y+h);
+
+	DeleteObject(brush);
 }
 void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
 	RECT r={x,y,x+w,y+h};
@@ -232,10 +260,12 @@ void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
 	SelectObject(_hdc,pen);
 
 	DrawText(_hdc,txt,-1,&r,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+
+	DeleteObject(pen);
 //	TextOutW(_hdc,x,y,txt,strlen(txt));
 }
 void refresh(){
-	uk_log("refresh");
+	InvalidateRect(_win,NULL,TRUE);
 }
 
 /* debug */

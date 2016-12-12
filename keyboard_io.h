@@ -17,17 +17,19 @@ typedef struct _symbol_x11 {
 	int is_modifier;
 }symbol_x11;
 
+
 int is_modifier(KeyCode keycode);
 KeyCode get_modifier_keycode(int modifier);
 KeySym get_modifier_keysym(int modifier);
 #endif 
 
 #ifdef WINDOWS
+typedef struct _symbol_win {
+	char c;
+}symbol_win;
+
 typedef struct _modifier_win {
 }modifier_win;
-
-typedef struct _symbol_win {
-}symbol_win;
 #endif
 
 typedef struct _keyboardio{

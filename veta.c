@@ -54,10 +54,12 @@ void veta_handleevent(event_t *event){
 			uk_log("Reset");
 			clear_selection(root);
 //			ui_state=HUD_OFFLINE;
-			veta_render();
+//			veta_render();
+			refresh();
 			break;
 		case SELECT_CELL:
-			uk_log("select cell %i\n",event->cell);
+			uk_log("select cell %i",event->cell);
+//			debug_print_tree(root);
 			select_cell(root,event->cell);
 			symbol *sym;
 			if(NULL!=(sym=get_selected_symbol(root))){
@@ -65,10 +67,13 @@ void veta_handleevent(event_t *event){
 				if(ui2_onselect_symbol(sym)) break;
 				sendkey(sym->data,1,0);
 			}
-			veta_render();
+			refresh();
 			break;
 		case UNDEFINED:
 			uk_log("got event UNDEFINED\n"); 
+			break;
+		default:
+			uk_log("WARNING undefined event type");
 			break;
 	}
 }
@@ -141,7 +146,7 @@ void veta_render(){
 	uk_log("debug!");
 	rgb black=(rgb){0,0,0};
 	rgb white=(rgb){0xff,0xff,0xff};
-	draw_text_box(BUILD,650,40,20,HEIGHT-45,black,black);
+	draw_text_box(BUILD,650,40,20,HEIGHT-45,white,black);
 #endif
 	uk_log("render done!");
 }
