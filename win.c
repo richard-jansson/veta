@@ -16,6 +16,15 @@
 #include "veta.h"
 #include "keyboard_io.h"
 
+// TODO: check if this code works when using multiple desktops
+// See important note on https://msdn.microsoft.com/en-us/library/windows/desktop/ms645616(v=vs.85).aspx
+#ifndef GET_X_LPARAM 
+#define GET_X_LPARAM(a) (int16_t) a&0xFFFF
+#endif 
+#ifndef GET_Y_LPARAM 
+#define GET_Y_LPARAM(a) (int16_t) (a >> 16)&0xFFFF
+#endif 
+
 // public 
 int lastX=0,lastY=0;
 HINSTANCE hinstance;
@@ -44,6 +53,8 @@ event_t keybindings[]={
 	{0,SWITCH_TREE,-1}}; 
 
 // private
+POINT _mouselast;
+int _isdrag;
 int lastsent;
 symbol *symbol_list;
 int running;
@@ -75,8 +86,33 @@ void ui_render(void(*callback)()){
 	onrender=callback;
 }
 LRESULT CALLBACK _win_callback(HWND win,UINT msg,WPARAM w,LPARAM l){
+	int dx,dy;
+	POINT mp;
+	RECT wpos;
+	HWND newfocus;
 //	SetLayeredWindowAttributes(_win,NULL,128,LWA_COLORKEY);
 	switch(msg){
+		case WM_MOUSEMOVE:
+			if(!_isdrag) break;
+			GetCursorPos(&mp);
+
+			dx=mp.x-_mouselast.x;
+			dy=mp.y-_mouselast.y;
+
+			GetWindowRect(win,&wpos);
+			SetWindowPos(win,HWND_TOPMOST,wpos.left+dx,wpos.top+dy,0,0,SWP_NOSIZE);
+
+			_mouselast.x=mp.x;
+			_mouselast.y=mp.y;
+			break;
+		case WM_LBUTTONUP:
+			_isdrag=0;
+			break;
+		case WM_LBUTTONDOWN:
+			if(!GetKeyState(VK_MENU)) break;
+			_isdrag=1;
+			GetCursorPos(&_mouselast);
+			break;
 		case WM_PAINT:
 			_hdc=BeginPaint(_win,&_ps);
 			onrender();	
@@ -121,7 +157,9 @@ event_t *_get_event_from_keycode(int keycode){
 
 LRESULT CALLBACK _keyboard_hook(int n,WPARAM w,LPARAM l){
 	PKBDLLHOOKSTRUCT p;
+	LPPOINT mouse;
 	int propagate=1;
+	int dx,dy;
 	event_t *ev;
 	if(n==HC_ACTION){
 		switch(w){
@@ -165,6 +203,8 @@ LRESULT CALLBACK _keyboard_hook(int n,WPARAM w,LPARAM l){
 
 /* Starts the ui backend code */
 void ui_init(int w,int h,int x,int y){
+	_isdrag=0;
+
 	running=1;	
 
 	WNDCLASSEX wc;
@@ -190,13 +230,18 @@ void ui_init(int w,int h,int x,int y){
 	// Keyboard grabbing 
 	SetWindowsHookEx(WH_KEYBOARD_LL,_keyboard_hook,0,0);
 
+//	SetWindowsHookEx(WH_MOUSE_LL,_mouse_hook,0,0);
+
 // Create actual window
-	_win=CreateWindowEx(WS_EX_LAYERED,
+	_win=CreateWindowEx(WS_EX_LAYERED|WS_EX_TOPMOST,
 				_classname,
 				"Veta",
 				WS_OVERLAPPEDWINDOW,
 				CW_USEDEFAULT,CW_USEDEFAULT,WIDTH,HEIGHT,
 				NULL,NULL,hinstance,NULL);
+// Capture the mouse
+//	SetCapture(_win);
+
 // Remove edges
 	LONG style=GetWindowLong(_win,GWL_STYLE);
 	style &= ~(WS_BORDER|WS_DLGFRAME);
@@ -206,7 +251,7 @@ void ui_init(int w,int h,int x,int y){
 	exstyle &= ~(WS_EX_DLGMODALFRAME|WS_EX_CLIENTEDGE|WS_EX_STATICEDGE);
 	SetWindowLong(_win,GWL_EXSTYLE,exstyle);
 
-	SetWindowPos(_win,NULL,0,0,0,0,SWP_FRAMECHANGED|SWP_NOMOVE|SWP_NOSIZE);
+	SetWindowPos(_win,HWND_TOPMOST,0,0,0,0,SWP_FRAMECHANGED|SWP_NOMOVE|SWP_NOSIZE);
 
 	if(!_win) printf("Couldn't create window");
 

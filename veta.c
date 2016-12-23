@@ -126,7 +126,6 @@ int render_cell(cell *cell,void *data){
 }
 
 void veta_render(){
-	uk_log("veta_render");
 	box b;
 	b.x0=b.y0=0;
 	b.w=WIDTH;
@@ -143,12 +142,10 @@ void veta_render(){
 	
 	render_ui2();
 #ifdef DEBUG
-	uk_log("debug!");
 	rgb black=(rgb){0,0,0};
 	rgb white=(rgb){0xff,0xff,0xff};
 	draw_text_box(BUILD,650,40,20,HEIGHT-45,white,black);
 #endif
-	uk_log("render done!");
 }
 
 void veta_click(int x,int y){
