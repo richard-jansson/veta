@@ -75,6 +75,7 @@ void ui_render(void(*callback)()){
 	onrender=callback;
 }
 LRESULT CALLBACK _win_callback(HWND win,UINT msg,WPARAM w,LPARAM l){
+//	SetLayeredWindowAttributes(_win,NULL,128,LWA_COLORKEY);
 	switch(msg){
 		case WM_PAINT:
 			_hdc=BeginPaint(_win,&_ps);
@@ -190,7 +191,7 @@ void ui_init(int w,int h,int x,int y){
 	SetWindowsHookEx(WH_KEYBOARD_LL,_keyboard_hook,0,0);
 
 // Create actual window
-	_win=CreateWindowEx(WS_EX_CLIENTEDGE|CS_HREDRAW|CS_VREDRAW,
+	_win=CreateWindowEx(WS_EX_CLIENTEDGE|CS_HREDRAW|CS_VREDRAW|WS_EX_LAYERED,
 				_classname,
 				"Veta",
 				WS_OVERLAPPEDWINDOW,
@@ -198,6 +199,15 @@ void ui_init(int w,int h,int x,int y){
 				NULL,NULL,hinstance,NULL);
 
 	if(!_win) printf("Couldn't create window");
+
+	BLENDFUNCTION blend={AC_SRC_OVER,0,255,0};
+
+//	UpdateLayeredWindow(_win,NULL,NULL,NULL,NULL,NULL,RGB(255,255,255),&blend,ULW_COLORKEY);
+
+//	if(!SetLayeredWindowAttributes(win,NULL,128,LWA_ALPHA)){
+	if(!SetLayeredWindowAttributes(_win,NULL,204,LWA_ALPHA)){
+		uk_log("setlayeredwindowattributes failed %i",GetLastError());
+	}
 
 	_setupkeymap();
 
