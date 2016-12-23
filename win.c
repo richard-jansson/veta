@@ -191,12 +191,22 @@ void ui_init(int w,int h,int x,int y){
 	SetWindowsHookEx(WH_KEYBOARD_LL,_keyboard_hook,0,0);
 
 // Create actual window
-	_win=CreateWindowEx(WS_EX_CLIENTEDGE|CS_HREDRAW|CS_VREDRAW|WS_EX_LAYERED,
+	_win=CreateWindowEx(WS_EX_LAYERED,
 				_classname,
 				"Veta",
 				WS_OVERLAPPEDWINDOW,
 				CW_USEDEFAULT,CW_USEDEFAULT,WIDTH,HEIGHT,
 				NULL,NULL,hinstance,NULL);
+// Remove edges
+	LONG style=GetWindowLong(_win,GWL_STYLE);
+	style &= ~(WS_BORDER|WS_DLGFRAME);
+	SetWindowLong(_win,GWL_STYLE,style);
+
+	LONG exstyle=GetWindowLong(_win,GWL_EXSTYLE);
+	exstyle &= ~(WS_EX_DLGMODALFRAME|WS_EX_CLIENTEDGE|WS_EX_STATICEDGE);
+	SetWindowLong(_win,GWL_EXSTYLE,exstyle);
+
+	SetWindowPos(_win,NULL,0,0,0,0,SWP_FRAMECHANGED|SWP_NOMOVE|SWP_NOSIZE);
 
 	if(!_win) printf("Couldn't create window");
 
