@@ -2,3 +2,4 @@ Add configuration option for alpha value
 Animate transitions?
 Configure the keys that are drawn on screen 
 test window topmost on windows
+when the window is closed the executable must exit
