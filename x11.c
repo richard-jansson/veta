@@ -25,7 +25,6 @@
 #include<X11/Xutil.h>
 
 #include<X11/extensions/XTest.h>
-#include<X11/extensions/Xdbe.h>
 
 #include "keyboard_io.h"
 #include "debug.h"
@@ -200,20 +199,6 @@ void setup_modifiers(){
 	}
 }
 
-
-
-// Setup double buffering if it's available
-int setup_dbe(){
-	assert(dpy);
-	int maj,min;
-	if(XdbeQueryExtension(dpy,&maj,&min)){
-		uk_log("DBE extension is enabled (%i.%i)",maj,min);
-	}else{
-		uk_log("DBE extension is not enabled!");
-	}
-}
-
-
 void load_font(){
 	char *font_name=FONT;
 
@@ -241,8 +226,6 @@ void ui_init(int w,int h,int x,int y){
 	dpy=XOpenDisplay("");
 	screen=DefaultScreen(dpy);
 	root=DefaultRootWindow(dpy);
-
-	setup_dbe();
 
 	XMatchVisualInfo(dpy, screen, 32, TrueColor, &visualinfo);
 
