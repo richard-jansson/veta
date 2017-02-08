@@ -3,12 +3,15 @@
 #include<assert.h>
 #include<string.h>
 
+#include<jansson.h>
+
 #include "veta.h"
 #include "debug.h"
 #include "keyboard_io.h"
 #include "ui.h"
 #include "conf.h"
 #include "render.h"
+
 
 cell *root;
 
@@ -144,11 +147,51 @@ void veta_click(int x,int y){
 
 int main(int argc,char *argv[]){
 	debug_init(LOG_FILE);
+	json_t *json;
+	json_error_t error;
+
+	json=json_load_file("./conf.json",0,&error);
+	if(!json){
+		uk_log("Failed to open conf.json: %s",error.text);
+		exit(1);
+	}
+
+	printf("type of root node = %i\n",json_typeof(json));
+
+	if(!json_is_object(json)){
+		uk_log("root node is not an object\n");
+		exit(1);
+	}
+	
+	size_t index,i2,i3;
+	const char *key;
+	json_t *value,*v2,*v3;
+
+	// Stunningly beautiful use of the preprocessor
+	json_object_foreach(json,key,value) {
+		if(json_is_array(value) && !strncmp("symbols",key,7)) {
+			int i=0;
+			printf("symbols = \n");
+			json_array_foreach(value,i2,v2){
+				if(json_is_string(v2)){
+					printf("%s ",json_string_value(v2));
+					if(!((i+1)%4)) printf("\t");
+					if(!(++i%16)) printf("\n");
+				}
+			}
+		}
+	}
+	printf("\n");
+
+
+	exit(1);
+
 	uk_log("build: %s",BUILD);
 	int full_throttle=0;
 
 	symbol_mode=LOAD;
 	symbol_file=SYMBOLS_FILE;
+
 	for(int i=1;i<argc;i++){
 		if(!strcmp("--dump-symbols",argv[i])){
 			symbol_mode=DUMP;	
