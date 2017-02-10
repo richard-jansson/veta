@@ -21,9 +21,6 @@
 
 #define  FONT "-misc-fixed-bold-r-normal--18-120-100-100-c-90-iso8859-1"
 
-#define CELL_SIZE 12 
-#define TREE_DEPTH 2
-
 #define TOP_W WIDTH
 
 #define CELL_TOT_W WIDTH
@@ -42,8 +39,6 @@
 #define PARENT_MARGIN_HOR (PARENT_MARGIN_LEFT + PARENT_MARGIN_RIGHT)
 
 
-#define CELLS_W 4
-#define CELLS_H 3
 
 typedef struct _box {
 	int x0,y0;

@@ -1,7 +1,8 @@
 #include "color.h"
 
-#define CELLS_W 4
-#define CELLS_H 3
+// Default values 
+#define CELLS_W 1
+#define CELLS_H 1
 
 #define TREE_DEPTH 2
 

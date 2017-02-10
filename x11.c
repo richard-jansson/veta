@@ -182,7 +182,7 @@ void setup_modifiers(){
 }
 
 void load_font(){
-	char *font_name=FONT;
+	char *font_name=conf_get_string("font",FONT);
 
 	Font font=XLoadFont(dpy,font_name);
 	XSetFont(dpy,gc,font);
@@ -489,7 +489,8 @@ void ui_loop(int full_throttle){
 		}
 	}	
 	uk_log("ui_loop end!");
-	writestate(STATE_FILE,lastX,lastY);
+//	writestate(STATE_FILE,lastX,lastY);
+	veta_exit();
 }
 
 // Set x11 window on top
@@ -608,7 +609,7 @@ void _setupkeymap(){
 			char name[128];
 			int ks,mod,keycode;
 			sscanf(line,FORMAT,(char*)&name,&ks,&mod,&keycode);
-			uk_log(FORMAT,name,ks,mod,keycode);
+//			uk_log(FORMAT,name,ks,mod,keycode);
 			_add_unique(name,ks,mod,keycode);
 		}
 

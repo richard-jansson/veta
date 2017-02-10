@@ -3,7 +3,6 @@
 #include<assert.h>
 #include<string.h>
 
-#include<jansson.h>
 
 #include "veta.h"
 #include "debug.h"
@@ -11,6 +10,10 @@
 #include "ui.h"
 #include "conf.h"
 #include "render.h"
+
+#include "jsonconf.h"
+
+#define CONFIG_PATH "conf.json"
 
 
 cell *root;
@@ -20,6 +23,7 @@ char *symbol_file=NULL;
 sym_mode_t symbol_mode;
 sel_mode_t selection_mode=ZOOM;
 /* end of configuration options */
+
 
 void usage(char *cmd){
 	printf("Usage: %s \n",cmd);	
@@ -32,7 +36,12 @@ void usage(char *cmd){
 
 void veta_exit(){
 	uk_log("veta exit!");
-	writestate(STATE_FILE,lastX,lastY);
+
+	conf_save_position(lastX,lastY);
+	conf_save(CONFIG_PATH);
+
+
+//	writestate(STATE_FILE,lastX,lastY);
 	debug_exit();
 }
 
@@ -66,8 +75,11 @@ void veta_handleevent(event_t *event){
 }
 
 void veta_symbolsloaded(symbol *symbols,int n){
-	uk_log("Keymap is loaded! %i keys",n);
-	root=create_cells(symbols,n,CELL_SIZE,TREE_DEPTH,1);
+	conf_save_symbols("platform_symbols.json",symbols,n);
+
+	int cellsize=conf_get_int("n_columns",CELLS_W)*conf_get_int("n_rows",CELLS_H);
+
+	root=create_cells(symbols,n,cellsize,TREE_DEPTH,1);
 	clear_selection(root);
 }
 
@@ -77,7 +89,6 @@ int render_cell(cell *cell,void *data){
 	box *ob=(box *)data;
 	box nb;
 	assert(cell);
-
 
 	if(cell->level>1){
 		if(cell->symbol->name){
@@ -95,17 +106,21 @@ int render_cell(cell *cell,void *data){
 //		draw_box(WIDTH,HEIGHT,0,0,0,0,0);
 	}
 		
-	int innerWidth=(ob->w/CELLS_W)*0.9;
-	int innerHeight=(ob->h/CELLS_H)*0.9;
+	int n_cols=conf_get_int("n_columns",CELLS_W);
+	int n_rows=conf_get_int("n_rows",CELLS_H);
 
-	nb.w=(ob->w/CELLS_W)*0.9;
-	nb.h=(ob->h/CELLS_H)*0.9;
-	int pleft=0.1*(ob->w/CELLS_W);
-	int ptop=0.1*(ob->h/CELLS_H);
 
-	for(int i=0;i<cell->nchildren;i++){
-		nb.x0=nb.w*(i%CELLS_W)+ob->x0+pleft;	
-		nb.y0=nb.h*(i/CELLS_W)+ob->y0+ptop;
+	int innerWidth=(ob->w/n_cols)*0.9;
+	int innerHeight=(ob->h/n_rows)*0.9;
+
+	nb.w=(ob->w/n_cols)*0.9;
+	nb.h=(ob->h/n_rows)*0.9;
+	int pleft=0.1*(ob->w/n_cols);
+	int ptop=0.1*(ob->h/n_rows);
+
+	for(int i=0;i<cell->nchildren ;i++){
+		nb.x0=nb.w*(i%n_cols)+ob->x0+pleft;	
+		nb.y0=nb.h*(i/n_cols)+ob->y0+ptop;
 		
 		render_cell(cell->children[i],&nb);
 	}
@@ -147,44 +162,8 @@ void veta_click(int x,int y){
 
 int main(int argc,char *argv[]){
 	debug_init(LOG_FILE);
-	json_t *json;
-	json_error_t error;
-
-	json=json_load_file("./conf.json",0,&error);
-	if(!json){
-		uk_log("Failed to open conf.json: %s",error.text);
-		exit(1);
-	}
-
-	printf("type of root node = %i\n",json_typeof(json));
-
-	if(!json_is_object(json)){
-		uk_log("root node is not an object\n");
-		exit(1);
-	}
 	
-	size_t index,i2,i3;
-	const char *key;
-	json_t *value,*v2,*v3;
-
-	// Stunningly beautiful use of the preprocessor
-	json_object_foreach(json,key,value) {
-		if(json_is_array(value) && !strncmp("symbols",key,7)) {
-			int i=0;
-			printf("symbols = \n");
-			json_array_foreach(value,i2,v2){
-				if(json_is_string(v2)){
-					printf("%s ",json_string_value(v2));
-					if(!((i+1)%4)) printf("\t");
-					if(!(++i%16)) printf("\n");
-				}
-			}
-		}
-	}
-	printf("\n");
-
-
-	exit(1);
+	conf_init(CONFIG_PATH);
 
 	uk_log("build: %s",BUILD);
 	int full_throttle=0;
@@ -215,8 +194,6 @@ int main(int argc,char *argv[]){
 		}
 	}
 
-	state *st=readstate(STATE_FILE);
-
 	// Set up callbacks 
 	ui_onevent(veta_handleevent);
 	ui_onclick(ui2_handle_click);
@@ -225,7 +202,10 @@ int main(int argc,char *argv[]){
 	ui_haskeymap(veta_symbolsloaded);
 	ui_render(veta_render);
 
-	ui_init(WIDTH,HEIGHT,st->x,st->y);
+	int x,y;
+	conf_read_position(&x,&y);
+
+	ui_init(conf_get_int("width",WIDTH),conf_get_int("height",HEIGHT),x,y);
 
 	ui2_init();
 
