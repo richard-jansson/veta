@@ -60,4 +60,5 @@ Highlight the cells that the user has selected. This option I would say is less 
 
 
 ## Feedback 
-If you are interested by this 
+If you are interested by this contact me via the form in the link below. 
+[Contact](http://eruditenow.com/#contact)
