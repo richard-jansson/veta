@@ -1,7 +1,7 @@
 # Veta - Avant garde text input
 Veta is a program that enables you to write, somewhat efficiently with only one hand. It utilizes a grid system. Where there are cells composing of several subcell. Imagine that you have a 3x3 matrix where all the cells contains another 3x3 cell. In this way you can reach 81 cells with only two keypresses. This is merely a demonstration of the concept not intended for serious use. 
 
-[![A youtube video says more than a thousand words.](https://img.youtube.com/vi/8kuppby-KJ0/0.jpg)](https://youtu.be/8kuppby-KJ0?t=170)  
+[![A youtube video says more than a thousand words.](http://eruditenow.com/img/1.jpg)](https://youtu.be/8kuppby-KJ0?t=170)  
 
 
 [A youtube video says more than a thousand words.](https://youtu.be/8kuppby-KJ0?t=170)
