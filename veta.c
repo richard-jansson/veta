@@ -35,10 +35,8 @@ void veta_exit(){
 	uk_log("veta exit!");
 
 	conf_save_position(lastX,lastY);
-	conf_save(CONFIG_PATH);
+//	conf_save(CONFIG_PATH);
 
-
-//	writestate(STATE_FILE,lastX,lastY);
 	debug_exit();
 }
 

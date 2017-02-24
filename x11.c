@@ -5,13 +5,12 @@
 
 #include<X11/Xlib.h>
 #include<X11/Xutil.h>
-
 #include<X11/extensions/XTest.h>
 
 #include "keyboard_io.h"
 #include "debug.h"
 #include "veta.h"
-
+#include "jsonconf.h"
 
 #define FORMAT "%s %i %i %i\n"
 
@@ -120,6 +119,11 @@ int g_modifier_count;
 
 void ui_quit(){
 	running=0;
+}
+
+void reset_clip(){
+	XRectangle rects[]={ {0,0,WIDTH,HEIGHT} };
+	XSetClipRectangles(dpy,gc,x,y,rects,1,Unsorted);
 }
 
 void _set_alpha(Display *dpy,Window window,double alpha){
@@ -295,24 +299,24 @@ void get_win_pos(Window *win,int *x,int *y){
 	
 	// FIXME: This throws of a compilation warning. Does the code work?
 	for(Window cwin=win; cwin != 0; cwin=parent){
-				// I'm sure this is cheating!
-					XQueryTree(dpy,cwin,&root_return,&parent,&children_return,&n_children);
+		// I'm sure this is cheating!
+		XQueryTree(dpy,cwin,&root_return,&parent,&children_return,&n_children);
 
 
-					// Don't ask. This is pure magic!
-					// Probably it only works on Ubuntu
-					// there are for some 2 windows around my window 
-					// until I can see the  actual position of the window. 
-					// Milage may vary. 
-						XWindowAttributes tattr;
-						XGetWindowAttributes(dpy,cwin,&tattr);
-						X+=tattr.x; 
-						Y+=tattr.y;
-					i++;
-		}
+		// Don't ask. This is pure magic!
+		// Probably it only works on Ubuntu
+		// there are for some 2 windows around my window 
+		// until I can see the  actual position of the window. 
+		// Milage may vary. 
+		XWindowAttributes tattr;
+		XGetWindowAttributes(dpy,cwin,&tattr);
+		X+=tattr.x; 
+		Y+=tattr.y;
+		i++;
+	}
 
-		*x=X;
-		*y=Y;
+	*x=X;
+	*y=Y;
 }
 
 // Send Expose event to trigger a redraw
@@ -393,8 +397,7 @@ void ui_loop(int full_throttle){
 
 	XAllocNamedColor(dpy,
                      DefaultColormapOfScreen(DefaultScreenOfDisplay(dpy)),
-	                     "red",
-														                     &reds, &redx);
+	                     "red", &reds, &redx);
 
 	while(running){
 		XNextEvent(dpy,&ev);
@@ -762,10 +765,6 @@ u*/
 //	char *font_name="-adobe-avant garde gothic-book-o-normal--0-0-0-0-p-0-iso8859-1";
 //	char *font_name="-adobe-avantgarde-medium-i-normal--0-0-0-0-p-0-iso8859-1";
 
-void reset_clip(){
-	XRectangle rects[]={ {0,0,WIDTH,HEIGHT} };
-	XSetClipRectangles(dpy,gc,x,y,rects,1,Unsorted);
-}
 
 void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
 	long t0=get_msec(),t1;

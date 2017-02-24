@@ -17,7 +17,7 @@ json_t *conf_root,*json_symbols;
  *
  * This function should be made to work on other attributes as well. 
  */
-void iterate_json_symbol_pairs(json_t *conf_root,void(*callback)(char *,json_t *)){
+void _iterate_json_symbol_pairs(json_t *conf_root,void(*callback)(char *,json_t *)){
 	size_t index,i2,i3;
 	const char *key,*u;
 	json_t *value,*v2,*v3,*v;
@@ -70,9 +70,9 @@ void conf_init(const char *config_file,void (*onhaskeymap)(symbol *,int n)){
 		exit(1);
 	}
 	
-	iterate_json_symbol_pairs(conf_root,_countkeys);
+	_iterate_json_symbol_pairs(conf_root,_countkeys);
 	symbols=malloc(sizeof(symbol)*n_symbols);
-	iterate_json_symbol_pairs(conf_root,_addkeys);
+	_iterate_json_symbol_pairs(conf_root,_addkeys);
 
 	for(int i=0;i<n_symbols;i++){
 		uk_log("L: %s",symbols[i].name);
@@ -151,8 +151,6 @@ void conf_save_symbols(const char *path,symbol *unique,int n){
 		json_object_set_new(sym,unique[i].name,keycode);
 
 		json_array_append_new(json_symbols,sym);
-
-//		printf("%s:%i\n",unique[i].name,pspecific->keycode);
 	}
 	json_object_set_new(conf_root,"symbols",json_symbols);
 
