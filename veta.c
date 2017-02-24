@@ -3,7 +3,6 @@
 #include<assert.h>
 #include<string.h>
 
-
 #include "veta.h"
 #include "debug.h"
 #include "keyboard_io.h"
@@ -15,7 +14,6 @@
 
 #define CONFIG_PATH "conf.json"
 
-
 cell *root;
 
 /* Configuration options */
@@ -23,7 +21,6 @@ char *symbol_file=NULL;
 sym_mode_t symbol_mode;
 sel_mode_t selection_mode=ZOOM;
 /* end of configuration options */
-
 
 void usage(char *cmd){
 	printf("Usage: %s \n",cmd);	
@@ -75,6 +72,8 @@ void veta_handleevent(event_t *event){
 }
 
 void veta_symbolsloaded(symbol *symbols,int n){
+	uk_log("Symbols are loaded got %i symbols",n);
+
 	conf_save_symbols("platform_symbols.json",symbols,n);
 
 	int cellsize=conf_get_int("n_columns",CELLS_W)*conf_get_int("n_rows",CELLS_H);
@@ -163,7 +162,7 @@ void veta_click(int x,int y){
 int main(int argc,char *argv[]){
 	debug_init(LOG_FILE);
 	
-	conf_init(CONFIG_PATH);
+	conf_init(CONFIG_PATH,veta_symbolsloaded);
 
 	uk_log("build: %s",BUILD);
 	int full_throttle=0;
@@ -212,5 +211,6 @@ int main(int argc,char *argv[]){
 	ui2_add_widgets();
 
 	ui_loop(full_throttle);
+
 	return 1;
 }

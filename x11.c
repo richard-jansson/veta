@@ -586,6 +586,7 @@ void _get_unique_keycodes(KeySym *keymap,int min,int max,int keysyms_per_keycode
 	}
 }
 void _setupkeymap(){
+	// FIXME: we should have an option to dump the current keymap somewhere.  
 	uk_log("setup keymap");
 	if(symbol_mode==LOAD){
 		char *line=NULL;

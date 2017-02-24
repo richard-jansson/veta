@@ -27,9 +27,12 @@ cell *create_recurse(int lvl,int cellsize,int depth,int childn,cell *parent){
 	curr->cellsize=cellsize;
 	curr->parent=parent;
 
+	uk_log("create recurse %i/%i %i/%i",lvl,depth,max_symbols,symbols_added);
+
 	if(lvl==depth){
 		// TODO this isn't really right
 		if(symbols_added == max_symbols){
+			uk_log("got max symbols");
 			if(curr && curr->children) free(curr->children);
 			free(curr);
 			return NULL; 
@@ -37,6 +40,7 @@ cell *create_recurse(int lvl,int cellsize,int depth,int childn,cell *parent){
 		curr->symbol=current_symbol;
 		curr->n=childn;
 		current_symbol++;	
+		uk_log("added %s",current_symbol->name);
 		symbols_added++;
 		return curr;
 	}
@@ -93,7 +97,10 @@ void colorize(cell *root){
 cell *create_cells(symbol *symbols,int n_symbols,int cellsize,int  depth,int first){
 //	int depth = (int)ceil(log(n_symbols)/log(cellsize));
 	cell *root;
-	if(first) current_symbol=symbols;
+	if(first){
+	       	current_symbol=symbols;
+		symbols_added=0;
+	}
 	max_symbols=n_symbols;
 
 	root=create_recurse(0,cellsize,depth,0,NULL);

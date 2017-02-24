@@ -8,6 +8,7 @@ typedef struct _modifier_x11 {
 	KeySym ksym;
 }modifier_x11;
 
+// TODO: perhaps we should remove this extra complexity. Since I suppose that on all systems the data could be decoded into a number / keycode 
 typedef struct _symbol_x11 {
 // TODO: remove ks, since it's only used when printing log msg
 	KeySym ks;

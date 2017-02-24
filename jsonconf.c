@@ -1,4 +1,5 @@
 #include<jansson.h>
+#include<string.h>
 
 #include "debug.h"
 #include "cell.h"
@@ -7,16 +8,59 @@
 // Platform specific
 #include "keyboard_io.h"
 
-int has_symbols=0;
+symbol *symbols;
+int has_symbols=0,n_symbols=0,n;
 json_t *conf_root,*json_symbols;
 
-void conf_init(const char *config_file){
+/* 
+ * Iterate over all symbols that can be sent. 
+ *
+ * This function should be made to work on other attributes as well. 
+ */
+void iterate_json_symbol_pairs(json_t *conf_root,void(*callback)(char *,json_t *)){
+	size_t index,i2,i3;
+	const char *key,*u;
+	json_t *value,*v2,*v3,*v;
+
+	json_object_foreach(conf_root,key,value) {
+		if(json_is_array(value) && !strncmp("symbols",key,7)) {
+			int i=0;
+			has_symbols=1;
+			json_array_foreach(value,i2,v2){
+				if(json_is_object(v2)){
+					json_object_foreach(v2,u,v){
+						callback(u,v);
+					}
+				}
+			}
+		}
+	}
+}
+
+void _countkeys(char *s,json_t *w){
+	n_symbols++;
+}
+void _addkeys(char * s,json_t *w){
+	// memory leak for sure!
+//	symbols[n]=(symbol *)malloc(sizeof(symbol));
+	symbols[n].name=malloc(strlen(s)+1);
+
+	symbol_x11 *data=(symbol_x11 *)malloc(sizeof(symbol_x11));
+	data->keycode=json_integer_value(w);
+	symbols[n].data=(void*)data;
+
+	strncpy(symbols[n].name,s,strlen(s)+1);
+
+
+	n++;
+}
+
+void conf_init(const char *config_file,void (*onhaskeymap)(symbol *,int n)){
 	json_t *json;
 	json_error_t error;
 
 	conf_root=json_load_file(config_file,0,&error);
 	if(!conf_root){
-		printf("couldn't open %s\n",config_file);
 		uk_log("Failed to open conf.json: %s",error.text);
 		conf_root=json_object();
 	}
@@ -26,27 +70,15 @@ void conf_init(const char *config_file){
 		exit(1);
 	}
 	
-	size_t index,i2,i3;
-	const char *key;
-	json_t *value,*v2,*v3;
+	iterate_json_symbol_pairs(conf_root,_countkeys);
+	symbols=malloc(sizeof(symbol)*n_symbols);
+	iterate_json_symbol_pairs(conf_root,_addkeys);
 
-	// Stunningly beautiful use of the preprocessor
-	json_object_foreach(conf_root,key,value) {
-		uk_log("Reading got key %s",key);
-		if(json_is_array(value) && !strncmp("symbols",key,7)) {
-			int i=0;
-			uk_log("got symbols");
-			has_symbols=1;
-			json_array_foreach(value,i2,v2){
-				if(json_is_string(v2)){
-//					printf("%s ",json_string_value(v2));
-					if(!((i+1)%4)) printf("\t");
-					if(!(++i%16)) printf("\n");
-				}
-			}
-		}
+	for(int i=0;i<n_symbols;i++){
+		uk_log("L: %s",symbols[i].name);
 	}
-	printf("\n");
+		
+	onhaskeymap(symbols,n_symbols);
 }
 
 
@@ -122,7 +154,6 @@ void conf_save_symbols(const char *path,symbol *unique,int n){
 
 //		printf("%s:%i\n",unique[i].name,pspecific->keycode);
 	}
-	printf("set symbols on root");
 	json_object_set_new(conf_root,"symbols",json_symbols);
 
 }
