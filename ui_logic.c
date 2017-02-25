@@ -215,3 +215,7 @@ void ui2_add_widgets(){
 
 	widget_set_visible(w_configure,1);
 }
+
+int ui2_is_selected(symbol *a){
+	return a==selected;
+}

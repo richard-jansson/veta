@@ -204,9 +204,8 @@ void ui2_handle_click(int mx,int my){
 			y=y0;
 			y0-=h;
 
-			//  FIXME: code duplication create an intersect helper function!
+//  FIXME: code duplication create an intersect helper function!
 //			uk_log("intersect vs %i is visible (%i,%i) (%i,%i,%i,%i)",i,mx,my,x,y,w,h);
-
 			if( mx < x ) continue;
 			if( my < y ) continue;
 			if( mx > x + w ) continue;
@@ -221,10 +220,8 @@ void ui2_handle_click(int mx,int my){
 
 /* 
  * FIXME: code duplication between render_ui2 and ui2_handle_click 
- *
  */ 
 void render_ui2(){
-	return;
 	uk_log("render ui2");
 	void (*f)(widget_t *this,int x,int y,int w,int h);
 
@@ -234,7 +231,7 @@ void render_ui2(){
 	int y0=HEIGHT-h;
 	for(int i=0;i<n_widgets;i++) {
 		if(widgets[i]->visible ){
-//			uk_log("widget %i is visible",i);
+			uk_log("widget %i is visible",i);
 			f=widgets[i]->draw;
 			f(widgets[i],x0,y0,w,h);
 			y0-=h;

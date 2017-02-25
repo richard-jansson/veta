@@ -1,3 +1,3 @@
-#define VERSION "0.1.58-jansson"
-#define COMMIT "0694f6f197a4b65ea9f9f2af652724415a42ea59"
-#define BUILD "0.1.58-jansson 0694f6f197a4b65ea9f9f2af652724415a42ea59"
+#define VERSION "0.1.59-jansson"
+#define COMMIT "2b662c1149ec4677435e2b68956f6d23697d7e78"
+#define BUILD "0.1.59-jansson 2b662c1149ec4677435e2b68956f6d23697d7e78"

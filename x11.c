@@ -219,21 +219,20 @@ void ui_init(int w,int h,int x,int y){
 	uk_log("Win @ (%i,%i,%i,%i)",x,y,w,h);
 	
 	 attr.colormap   = XCreateColormap( dpy, root, visualinfo.visual, AllocNone) ;
-	 attr.event_mask = ExposureMask | KeyPressMask ;
+	 attr.event_mask = ExposureMask | KeyPressMask | ButtonPressMask | ButtonReleaseMask;
 	 attr.background_pixmap = None ;
 	 attr.border_pixel      = 0 ;
 
 	uk_log("root=%x\n",root);
 	uk_log("%i %i %i %i\n",x,y,w,h);
 	win=XCreateWindow(dpy,root,
-						x,y,w,h,
+		x,y,w,h,
 		0,
 		visualinfo.depth,
 		InputOutput,
 		visualinfo.visual,
 		CWColormap|CWEventMask|CWBackPixmap|CWBorderPixel,
 		&attr);
-
 
 	XWindowAttributes wa;
 
@@ -247,16 +246,11 @@ void ui_init(int w,int h,int x,int y){
 	XSetForeground(dpy,gc,black.pixel);
 	XFillRectangle(dpy,double_buffer,gc,0,0,wa.width,wa.height);
 
-
-
 	d=double_buffer;
 
 	uk_log("Created pixmap = %x",double_buffer);
-//	d=win;
-
 
 	XGetWindowAttributes(dpy,win,&wa);
-
 
 	load_font();
 
@@ -405,6 +399,7 @@ void ui_loop(int full_throttle){
 		switch(ev.type){
 			case ButtonRelease:
 			case ButtonPress:
+				uk_log("Got buttonpress or buttonrelease");
 				lastMX=ev.xbutton.x;
 				lastMY=ev.xbutton.y;
 
@@ -617,7 +612,7 @@ void _setupkeymap(){
 			_add_unique(name,ks,mod,keycode);
 		}
 
-		onhaskeymap(unique,n_unique);
+//		onhaskeymap(unique,n_unique);
 		return;
 	}
 	int min,max,keysyms_per_keycode;
@@ -638,7 +633,7 @@ void _setupkeymap(){
 	_get_unique_keycodes(keymap,min,max,keysyms_per_keycode,1);
 	uk_log("got %i unique",n_unique);
 
-	onhaskeymap(unique,n_unique);
+//	onhaskeymap(unique,n_unique);
 }
 int _already_used(char *s){
 	for(int i=0;i<n_unique;i++)

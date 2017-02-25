@@ -14,7 +14,7 @@
 
 #define CONFIG_PATH "conf.json"
 
-cell *root;
+cell *root_cell=NULL;
 
 /* Configuration options */
 char *symbol_file=NULL; 
@@ -48,16 +48,16 @@ void veta_handleevent(event_t *event){
 			break;
 		case RESET:
 			uk_log("Reset");
-			clear_selection(root);
+			clear_selection(root_cell);
 //			ui_state=HUD_OFFLINE;
 			veta_render();
 			break;
 		case SELECT_CELL:
 			uk_log("select cell %i\n",event->cell);
-			select_cell(root,event->cell);
+			select_cell(root_cell,event->cell);
 			symbol *sym;
-			if(NULL!=(sym=get_selected_symbol(root))){
-				clear_selection(root);
+			if(NULL!=(sym=get_selected_symbol(root_cell))){
+				clear_selection(root_cell);
 				if(ui2_onselect_symbol(sym)) break;
 				sendkey(sym->data,1,0);
 			}
@@ -76,8 +76,8 @@ void veta_symbolsloaded(symbol *symbols,int n){
 
 	int cellsize=conf_get_int("n_columns",CELLS_W)*conf_get_int("n_rows",CELLS_H);
 
-	root=create_cells(symbols,n,cellsize,TREE_DEPTH,1);
-	clear_selection(root);
+	root_cell=create_cells(symbols,n,cellsize,TREE_DEPTH,1);
+	clear_selection(root_cell);
 }
 
 int render_cell(cell *cell,void *data){
@@ -94,6 +94,7 @@ int render_cell(cell *cell,void *data){
 			// FIXME this should handle an arbitrary level
 			int is_selected=cell->selected || (cell->parent && cell->parent->selected);
 			if(selection_mode==HIGHLIGHT) bg=is_selected?cell->color_selected:cell->color;
+			else if(ui2_is_selected(cell->symbol)) bg=cell->color_selected;
 			else bg=cell->color;
 
 			draw_text_box(cell->symbol->name,ob->w,ob->h,ob->x0,ob->y0,fg,bg);
@@ -131,17 +132,15 @@ void veta_render(){
 	b.w=WIDTH;
 	b.h=HEIGHT;
 
-//	recurse_cells(root,render_cell,&b);
-
 	uk_log("draw_box");
 	draw_box(WIDTH,HEIGHT,0,0,0,0,0);
 	uk_log("render_cell");
 
 	if(selection_mode==ZOOM){
-		cell *deepest=get_deepest_cell(root);
+		cell *deepest=get_deepest_cell(root_cell);
 		render_cell(deepest,&b);
 	}else{
-		render_cell(root,&b);
+		render_cell(root_cell,&b);
 	}
 	
 	render_ui2();
