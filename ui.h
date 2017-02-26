@@ -20,6 +20,6 @@ void widget_set_visible(widget w,int v);
 void grabkeyboard();
 void ungrabkeyboard();
 widget add_widget(char *label,
-				void(*draw)(widget_t *this,int x,int y,int w,int h),
-				void(*onclick)(widget_t *w),
-				void(*onrelease)(widget_t *w,char *s,int *p,vkey key,void *pspecific));
+	void(*draw)(widget_t *this,int x,int y,int w,int h),
+	void(*onclick)(widget_t *w),
+	void(*onrelease)(widget_t *w,char *s,int *p,vkey key,void *pspecific));

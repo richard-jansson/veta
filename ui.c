@@ -23,14 +23,13 @@ int n_widgets=0;
 
 void standard_onrelease(widget_t *this,char *s,int *propagate,vkey key,void *pspecific){
 	*propagate=1;
-	uk_log("keypress sent to widget ... ignoring ...");
+	uk_log("current widget has no associated onrelease function");
 }
 void standard_click(widget_t *this){
 	uk_log("[%s] clicked",this->label);
 }
 
 void standard_draw(widget_t *this,int x,int y,int w,int h){
-	uk_log("s draw!");
 	draw_text_box(this->label,w,h,x,y,this->fg,this->bg);	
 }
 
@@ -44,16 +43,13 @@ void text_draw(widget_t *this,int x0,int y0,int w0,int h0){
 	x=(WIDTH-w)/2;
 	y=(HEIGHT-h)/2;
 	draw_text_box(this->label,w,h,x,y,this->fg,this->bg);	
-
-	uk_log("draw text box\n");
 }
 
 // By default the widgets are invisible
 widget add_widget(char *label,
-				void(*draw)(widget_t *this,int x,int y,int w,int h),
-				void(*onclick)(widget_t *w),
-				void(*onrelease)(widget_t *w,char *s,int *p,vkey key,void *pspecific)
-				)
+	void(*draw)(widget_t *this,int x,int y,int w,int h),
+	void(*onclick)(widget_t *w),
+	void(*onrelease)(widget_t *w,char *s,int *p,vkey key,void *pspecific))
 {
 	int n=n_widgets;
 	rgb white=(rgb){255,255,255};
@@ -174,21 +170,6 @@ void draw_conf_binding(){
 
 void *draw_functions[]={draw_normal,draw_conf,draw_conf_desc,draw_conf_binding};
 
-/*
-void ui2_init_old(){
-	ui_state=HUD_OFFLINE;
-
-	widgets=(widget_t**)malloc(sizeof(widget_t*)*(n_widgets+1));
-
-	int w=WIDTH;
-	int h=HEIGHT;
-
-	int qw=WIDTH/4,qh=HEIGHT/4;
-	w=qw*2;
-	h=qh*2;
-}
-*/
-
 void ui2_handle_click(int mx,int my){
 	void (*f)(widget_t *this);
 	int w=WIDTH/8;
@@ -197,22 +178,26 @@ void ui2_handle_click(int mx,int my){
 	int y0=HEIGHT-h;
 	int y;
 
-	uk_log("click at (%i,%i)",mx,my);
+
+	refresh();
+
+	uk_log("handle click!");
 
 	for(int i=0;i<n_widgets;i++) {
-		if(widgets[i]->visible  ){
+		if(widgets[i]->visible){
 			y=y0;
 			y0-=h;
-
 //  FIXME: code duplication create an intersect helper function!
-//			uk_log("intersect vs %i is visible (%i,%i) (%i,%i,%i,%i)",i,mx,my,x,y,w,h);
 			if( mx < x ) continue;
 			if( my < y ) continue;
 			if( mx > x + w ) continue;
 			if( my > y + h ) continue;
+
+			uk_log("ui2 handle click matches %s",widgets[i]->label);
+
 			f=widgets[i]->onclick;
 			f(widgets[i]);
-			// Redraw our beutiful UI
+
 			refresh();
 		}
 	}
@@ -222,7 +207,6 @@ void ui2_handle_click(int mx,int my){
  * FIXME: code duplication between render_ui2 and ui2_handle_click 
  */ 
 void render_ui2(){
-	uk_log("render ui2");
 	void (*f)(widget_t *this,int x,int y,int w,int h);
 
 	int w=WIDTH/8;
@@ -231,19 +215,20 @@ void render_ui2(){
 	int y0=HEIGHT-h;
 	for(int i=0;i<n_widgets;i++) {
 		if(widgets[i]->visible ){
-			uk_log("widget %i is visible",i);
 			f=widgets[i]->draw;
 			f(widgets[i],x0,y0,w,h);
 			y0-=h;
 		}
 	}
-//	refresh();
 }
 
 void widget_set_visible(widget w,int v){
-	uk_log("vis_for widget %i to %i\n",w,v);
 	widgets[(int)w]->visible=v?1:0;
 	refresh();
+}
+
+void widget_set_label(widget w,char *label){
+	widgets[w]->label=label;
 }
 
 void ui2_init(){

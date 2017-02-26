@@ -1,6 +1,17 @@
-when pressing backspace, we have a glitch in the graphics. As if it's rendered twice or whatever.
 Add configuration option for alpha value
 optimize away redraw flickering
 Animate transitions?
 Configure the keys that are drawn on screen 
 Can you run the program in Cygwin?
+The configuration should be stored in an appropriate location 
+Unbind keygrab for a little while say §
+PROMO: I have no idea what program there is to be compiled 
+PROMO: Copy 
+PROMO: pretty chick for site
+Change keybindings for numpad 
+Rebind the keys in the program 
+Icon for X11 
+option to dump current keys to a file
+when pressing backspace, we have a glitch in the graphics. As if it's rendered twice or whatever.
+Rounded corners? 
+FIXMEs and TODOS 

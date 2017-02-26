@@ -277,8 +277,7 @@ void ui_init(int w,int h,int x,int y){
 
 	kbio.start=kbio.stop=kbio.n=0;
 	_setupkeymap();
-	
-			
+
 	grabkeys();
 //	grabkeyboard();
 }
@@ -297,11 +296,9 @@ void get_win_pos(Window *win,int *x,int *y){
 		XQueryTree(dpy,cwin,&root_return,&parent,&children_return,&n_children);
 
 
-		// Don't ask. This is pure magic!
-		// Probably it only works on Ubuntu
+		// Don't ask. This is pure magic!  Probably it only works on Ubuntu
 		// there are for some 2 windows around my window 
-		// until I can see the  actual position of the window. 
-		// Milage may vary. 
+		// until I can see the  actual position of the window.  Milage may vary. 
 		XWindowAttributes tattr;
 		XGetWindowAttributes(dpy,cwin,&tattr);
 		X+=tattr.x; 
@@ -398,8 +395,6 @@ void ui_loop(int full_throttle){
 
 		switch(ev.type){
 			case ButtonRelease:
-			case ButtonPress:
-				uk_log("Got buttonpress or buttonrelease");
 				lastMX=ev.xbutton.x;
 				lastMY=ev.xbutton.y;
 

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 #include "veta.h"
 
 #include "keyboard_io.h"
@@ -12,7 +13,7 @@
 
 // Our state 
 int selectcell=0;
-symbol *selected;
+symbol *selected=NULL;
 char *label=NULL;
 
 // Our widgets
@@ -21,7 +22,6 @@ widget w_select;
 widget w_description,w_binding,w_done;
 widget w_label; // Edit  label 
 widget w_map; //  Edit mapping
-
 
 cell *curr;
 
@@ -49,12 +49,13 @@ char *string_backspace(char *s){
 }
 
 void done_click(widget_t *this){
+	uk_log("Done click!");
 	widget_set_visible(w_configure,1);
 
 	widget_set_visible(w_description,0);
 	widget_set_visible(w_binding,0);
 	widget_set_visible(w_done,0);
-	
+
 	selected=NULL;
 }
 
@@ -102,9 +103,11 @@ void desc_click(widget *this){
 // move name to label, that we work on
 	if(selected->name){
 		if(label) free(label);
-		label=malloc(strlen(selected->name));
-		*label='\0';
-		strcat(label,selected->name);
+		label=malloc(strlen(selected->name)+1);
+//		strcat(label,selected->name);
+		strncpy(label,selected->name,strlen(selected->name)+1);
+//		this->label=label;
+		widget_set_label(w_label,label);
 	}
 //	label=selected->name;
 
@@ -131,12 +134,11 @@ void map_onrelease(widget_t *this,char *s,int *propagate,vkey  key,void *pspecif
 		*propagate=1;
 		return;
 	}
-	uk_log("REMAPPING  %s\n",selected->name); 
+
 	log_platformspecific(selected->data);
 	log_platformspecific(pspecific);
 
 	selected->data=pspecific;
-
 
 	this->visible=0;
 
@@ -155,25 +157,31 @@ void label_onrelease(widget_t *this,char *s,int *propagate,vkey  key,void *pspec
 	}
 // To get enter or escape or whatever
 	if(!isprint(*s) || key == ENTER) {
-		ungrabkeyboard();
 
 // Back to S. III
 		widget_set_visible(w_label,0);
+		// Why is this set to visible?
+		widget_set_visible(w_configure,0);
 
 		widget_set_visible(w_description,1);
 		widget_set_visible(w_binding,1);
+		widget_set_visible(w_done,1);
 
+		assert(selected);
 // I hate C from the bottom of my heart, the subtle bugs created by this 
 // ancient beast creeps in in early stages of development. Just like a 
 // a Succubus it leads you to believe you've done something clever and nice,
 // while you in fact sawed your fucking leg of.
 		if(selected->name) {
-			free(selected->name);
+//			free(selected->name);
 		}
 		selected->name=malloc(strlen(selected->name)+1);
 		selected->name[0]='\0';
 		strcat(selected->name,label);
+		free(label); 
+		label=NULL;
 
+		ungrabkeyboard();
 		render_ui2();
 		return;
 	}
@@ -181,16 +189,17 @@ void label_onrelease(widget_t *this,char *s,int *propagate,vkey  key,void *pspec
 	label=string_append(label,s);
 
 	render_ui2();
+	refresh();
 	
 // Stop the signal from propagating, we're eating this!
 	*propagate=0;
 }
 /*
- onclick  				I -> II
- onselectcell			II -> III
- onclick					III -> {IV,V,VI}
- onenter					IV -> III
- onbinding				V		-> III
+ onclick  		I   -> II
+ onselectcell		II  -> III
+ onclick		III -> {IV,V,VI}
+ onenter		IV  -> III
+ onbinding		V   -> III
 */
 
 void ui2_add_widgets(){

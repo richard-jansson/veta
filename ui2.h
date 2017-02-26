@@ -12,3 +12,4 @@ typedef struct {
 
 
 void text_draw(widget_t *this,int x0,int y0,int w0,int h0);
+void widget_set_label(widget w,char *label);
