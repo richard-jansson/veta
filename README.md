@@ -63,7 +63,22 @@ Select cell by zooming in on the deeper cell. My guess is that this makes it eas
 
 Highlight the cells that the user has selected. This option I would say is less distracting once you've got the hang of the system which shouldn't take to long. Even if you only are moderately gifted.
 
+# Configuration 
+You can configure the program with the help of a json based configuration file. I went with json since I've lost the code which was the attempt of building a flex / bison parser from scratch. And since it gives me some flexability and is in general a well known format and so on. What I don't like with this option is that it reorders the file whenever new data is saved with the program, which is not very nice at all. Also it adds some unecessery extra stuff which is really neat. However since it saves me from hours of hours of creating a configuraiton file format which if I know myself would probably also be Turing-complete. If it sounds tempting get me in touch and you might convince me that I am wrong.  
 
+Enough with the tech talk. What can you do with it. The configuration options that we have so far is: 
+
+keybindings 
+	cell0-cell11 - selected whatever keycode you want to bind selecting cell N with. Use xev to get the keycodes. (This is not supported on windows yet)
+	reset - jump back to previous selection 
+	quit - currently mapped to § on a Finnish keyboard so I guess this default ought to be changed. You can also look at the meybindings struct in x11.c if you want to change this. But it's available in conf.json
+	position { x : int , y:  int) the position which the window will start at, not tested in windows yet. This is saved automagically when the program is closed  
+	width - window width in pixels 
+	height - window height in pixels		
+
+Symbols: the symbols are saved as an array consisting of an object with a key for the description and the keycode to be sent 
+	Expect all of this to be changed to support a wider range of features than just single keypresses. 
 ## Feedback 
+
 If you are interested by this contact me via the form in the link below. 
 [Contact](http://eruditenow.com/#contact)

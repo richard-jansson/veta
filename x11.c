@@ -116,7 +116,8 @@ event_t keybindings[]={
 
 	{50,RESET,-1}, // Shift 
 	{49,QUIT,-1}, // Section
-	{23,SWITCH_TREE,-1}}; // Tab
+	{23,SWITCH_TREE,-1}
+}; // Tab
 
 Display *dpy=NULL;
 XSetWindowAttributes attr ;
@@ -134,6 +135,23 @@ int n_unique=0,max_keysyms=0;
 keyboardio kbio;
 modifier_x11 *g_modifiers=NULL;
 int g_modifier_count;
+
+
+void _setupkeybindings(){
+	char name[20];
+	uk_log("Reading from conf");
+	char *eventtype_strings[]={"undefined","cell","reset","quit","switchtree"};
+	for(int i=0;i<sizeof(keybindings)/sizeof(event_t);i++){
+		if(keybindings[i].type==SELECT_CELL){
+			sprintf(name,"cell%i",keybindings[i].cell);
+			uk_log("looking for %s",name);
+			keybindings[i].keycode=conf_get_keybinding(name,keybindings[i].keycode);
+		}else{
+			uk_log("looking for %s",eventtype_strings[keybindings[i].type]);
+			keybindings[i].keycode=conf_get_keybinding(eventtype_strings[keybindings[i].type],keybindings[i].keycode);	
+		}
+	}
+}
 
 void ui_quit(){
 	running=0;
@@ -836,11 +854,16 @@ void ungrabkeyboard(){
 void grabkeys(){
 	uk_log("Grabbing keys");
 	Window root = DefaultRootWindow(dpy);
+	uk_log("Reading from configuration file");
+	_setupkeybindings();
 	for(int i=0;i<sizeof(keybindings)/sizeof(event_t);i++){
 		int mod=0;
+		printf("grabbing %i\n",keybindings[i].keycode);
+		if(keybindings[i].keycode==23) continue;
 		for(int j=0;j<8;j++){
 			if( mod & keybindings[i].modifiers || mod == 0 ){
 				XGrabKey(dpy,keybindings[i].keycode,mod,root,False,GrabModeAsync,GrabModeAsync);
+				XFlush(dpy);
 			}
 			mod=!mod?1:mod*2;
 		}

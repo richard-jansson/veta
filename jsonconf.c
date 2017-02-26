@@ -81,16 +81,32 @@ void conf_init(const char *config_file,void (*onhaskeymap)(symbol *,int n)){
 	onhaskeymap(symbols,n_symbols);
 }
 
-
-int conf_get_int(char *key,int def){
+int _conf_get_int(json_t *root, char *key,int def){
 	json_t *integer;
-	integer=json_object_get(conf_root,key);
+	uk_log("looking for key %s",key);
+	integer=json_object_get(root,key);
 	if(!json_is_integer(integer)){
 		uk_log("configuration error %s is supposed to be an integer",key);
 		return def;
 	}
 	if(!integer) return def;
 	return json_integer_value(integer);
+}
+int conf_get_keybinding(char *event,int def){	
+	const char *key,*u;
+	json_t *value,*v2,*v3,*v;
+	json_object_foreach(conf_root,key,value) {
+		if(json_is_object(value) && !strncmp("keybindings",key,11)) {
+			int t=_conf_get_int(value,event,def);
+			uk_log("%s = %i",event,t);
+			return t;
+		}
+	}
+	return def;
+}
+
+int conf_get_int(char *key,int def){
+	return _conf_get_int(conf_root,key,def);
 }
 
 char *conf_get_string(char *key,char *def){
@@ -163,3 +179,4 @@ void conf_save(const char *path){
 		uk_log("json dump error!");
 	}
 }
+

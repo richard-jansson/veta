@@ -1,6 +1,6 @@
 
 {"n_columns": 4, "symbols": [
-{"A": 56}, 
+{"a": 56}, 
 {"b": 56}, 
 {"c": 54}, 
 {"d": 40}, 
@@ -108,6 +108,21 @@
 {"parenleft": 187}, 
 {"parenright": 188}, 
 {"Mode_switch": 203}], "n_rows": 3, "keybindings": 
-{"cell11": 120, "cell5": 39, "cell9": 65, "cell1": 36, "cell12": 99, "cell8": 64, "cell4": 38, "cell10": 122, "cell3": 37, "cell2": 36, "cell6": 56, "cell13": 118, "cell7": 57}, "position": 
+{
+"cell0":24,
+"cell1":25,
+"cell2":26,
+"cell3":27,
+"cell4":38,
+"cell5":39,
+"cell6":40,
+"cell7":41,
+"cell8":52,
+"cell9":53,
+"cell10":54,
+"cell11":55,
+"reset": 50,
+"quit": 49
+}, "position": 
 {"x": 801, "y": 240},
 "width":800,"height":600}

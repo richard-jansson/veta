@@ -15,3 +15,6 @@ option to dump current keys to a file
 when pressing backspace, we have a glitch in the graphics. As if it's rendered twice or whatever.
 Rounded corners? 
 FIXMEs and TODOS 
+run gcc with warnnings for unused variables
+x11 get modifiers on all keygrabs
+keybindings in options on windows

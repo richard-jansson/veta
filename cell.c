@@ -45,12 +45,10 @@ cell *create_recurse(int lvl,int cellsize,int depth,int childn,cell *parent){
 	curr->cellsize=cellsize;
 	curr->parent=parent;
 
-	uk_log("create recurse %i/%i %i/%i",lvl,depth,max_symbols,symbols_added);
 
 	if(lvl==depth){
 		// TODO this isn't really right
 		if(symbols_added == max_symbols){
-			uk_log("got max symbols");
 			if(curr && curr->children) free(curr->children);
 			free(curr);
 			return NULL; 
