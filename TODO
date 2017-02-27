@@ -1,5 +1,4 @@
-Add configuration option for alpha value
-optimize away redraw flickering
+Unbalanced trees
 Animate transitions?
 Configure the keys that are drawn on screen 
 Can you run the program in Cygwin?
@@ -16,5 +15,6 @@ when pressing backspace, we have a glitch in the graphics. As if it's rendered t
 Rounded corners? 
 FIXMEs and TODOS 
 run gcc with warnnings for unused variables
-x11 get modifiers on all keygrabs
 keybindings in options on windows
+wrap XGrabkey in different process to avoid crashes 
+Configuration and keybinding for windows 

@@ -1,0 +1,3 @@
+#define VERSION "0.1.72-master"
+#define COMMIT "4c4738c07a14c6ad5946801c9ac19704669a0f6d"
+#define BUILD "0.1.72-master 4c4738c07a14c6ad5946801c9ac19704669a0f6d"

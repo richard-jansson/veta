@@ -295,7 +295,7 @@ void ui_init(int w,int h,int x,int y){
 	_set_on_top(dpy,win);
 	_set_sticky(dpy,win);
 
-	_set_alpha(dpy,win,0.7);
+	_set_alpha(dpy,win,conf_get_float("alpha",ALPHA));
 
 	XMapWindow(dpy,win);
 	XMoveWindow(dpy,win,x,y);

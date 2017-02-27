@@ -31,6 +31,9 @@
 #define WIDTH 800
 #define HEIGHT 600
 
+// Overwritten with alpha from conf.json
+#define ALPHA 0.7
+
 #define MOD_MAX 1
 
 #define STATE_FILE "veta.state"

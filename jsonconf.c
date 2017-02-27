@@ -81,6 +81,19 @@ void conf_init(const char *config_file,void (*onhaskeymap)(symbol *,int n)){
 	onhaskeymap(symbols,n_symbols);
 }
 
+float _conf_get_float(json_t *root, char *key,float def){
+	json_t *real;
+	real=json_object_get(root,key);
+	if(!json_is_real(real)){
+		uk_log("configuration error %s is supposed to be an real",key);
+		return def;
+	}
+	if(!real) return def;
+	return json_real_value(real);
+}
+float conf_get_float(char *key,float def){
+	return _conf_get_float(conf_root,key,def);
+}
 int _conf_get_int(json_t *root, char *key,int def){
 	json_t *integer;
 	uk_log("looking for key %s",key);

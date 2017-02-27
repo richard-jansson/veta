@@ -125,4 +125,5 @@
 "quit": 49
 }, "position": 
 {"x": 801, "y": 240},
-"width":800,"height":600}
+"width":800,"height":600,
+"alpha":0.9}
