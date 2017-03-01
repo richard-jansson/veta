@@ -465,7 +465,6 @@ void ui_loop(int full_throttle){
 				break;
 			case DestroyNotify:
 				uk_log("destroy window");
-//				uk_log("subwindow = %i\n",ev.subwindow);
 				//  Destroy notify here makes the program close whenever you open 
 				// A new window on my machine. Wonder why?
 //				running=0;

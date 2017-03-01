@@ -53,7 +53,6 @@ void veta_exit(){
 	uk_log("veta exit!");
 
 	conf_save_position(lastX,lastY);
-//	conf_save(CONFIG_PATH);
 
 	debug_exit();
 }
@@ -67,7 +66,6 @@ void veta_handleevent(event_t *event){
 		case RESET:
 			uk_log("Reset");
 			clear_selection(root_cell);
-//			ui_state=HUD_OFFLINE;
 			veta_render();
 			break;
 		case SELECT_CELL:
