@@ -642,7 +642,7 @@ void _setupkeymap(){
 			_add_unique(name,ks,mod,keycode);
 		}
 
-//		onhaskeymap(unique,n_unique);
+		onhaskeymap(unique,n_unique);
 		return;
 	}
 	int min,max,keysyms_per_keycode;
@@ -663,7 +663,7 @@ void _setupkeymap(){
 	_get_unique_keycodes(keymap,min,max,keysyms_per_keycode,1);
 	uk_log("got %i unique",n_unique);
 
-//	onhaskeymap(unique,n_unique);
+	onhaskeymap(unique,n_unique);
 }
 int _already_used(char *s){
 	for(int i=0;i<n_unique;i++)

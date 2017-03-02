@@ -18,3 +18,4 @@ run gcc with warnnings for unused variables
 keybindings in options on windows
 wrap XGrabkey in different process to avoid crashes 
 Configuration and keybinding for windows 
+https://github.com/facebookresearch/fastText/blob/master/pretrained-vectors.md

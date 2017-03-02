@@ -30,7 +30,7 @@
 
 #include "jsonconf.h"
 
-#define CONFIG_PATH "conf.json"
+#define CONFIG_PATH "jiowconf.json"
 
 cell *root_cell=NULL;
 
@@ -84,8 +84,10 @@ void veta_handleevent(event_t *event){
 			break;
 	}
 }
-
+int symbolsloaded=0;
 void veta_symbolsloaded(symbol *symbols,int n){
+	if(n==0) return;
+	symbolsloaded++;
 	uk_log("Symbols are loaded got %i symbols",n);
 
 	conf_save_symbols("platform_symbols.json",symbols,n);
@@ -207,12 +209,18 @@ int main(int argc,char *argv[]){
 	ui_onrelease(ui2_handle_release);
 
 	ui_haskeymap(veta_symbolsloaded);
+
 	ui_render(veta_render);
 
 	int x,y;
 	conf_read_position(&x,&y);
 
 	ui_init(conf_get_int("width",WIDTH),conf_get_int("height",HEIGHT),x,y);
+
+	if(!symbolsloaded){
+		fprintf(stderr,"Failed to load symbols\n");
+		exit(1);
+	}
 
 	ui2_init();
 
