@@ -30,7 +30,7 @@
 
 #include "jsonconf.h"
 
-#define CONFIG_PATH "jiowconf.json"
+#define CONFIG_PATH "conf.json"
 
 cell *root_cell=NULL;
 
