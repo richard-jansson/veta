@@ -46,7 +46,9 @@ typedef struct _symbol_win {
 	char c;
 }symbol_win;
 
+// FIXME: implement modifier win
 typedef struct _modifier_win {
+	int a;
 }modifier_win;
 #endif
 

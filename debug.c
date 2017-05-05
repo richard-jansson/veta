@@ -23,7 +23,9 @@
 #include<stdarg.h>
 #include<assert.h>
 #include<time.h>
+#ifdef UNIX
 #include<sys/time.h>
+#endif
 
 
 #include"debug.h"
@@ -37,9 +39,13 @@ void debug_init(char *path){
 }
 
 long get_msec(){
+#ifdef UNIX
 	struct timeval tv;
 	gettimeofday(&tv,NULL);
 	return tv.tv_sec*1000+tv.tv_usec/1000;
+#endif
+	// FIXME: not implemented
+	return 0;
 }
 
 void _uk_log(const char *file,int line,const char *fmt,...){

@@ -23,6 +23,7 @@
 #include<time.h>
 
 #ifdef WINDOWS 
+#include<stdlib.h>w
 int random(){
 	return rand();
 }
