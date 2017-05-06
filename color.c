@@ -74,8 +74,15 @@ double random_double(){
 	return random()/(double)RAND_MAX;
 }
 
+double clip(double a, double lo, double hi) {
+	if (a < lo) return lo;
+	if (a > hi) return hi;
+	return a;
+}
+
 double rand_y(){
-	double a=random_double()*0.5;
+
+	double a = clip(random_double(), 0.5, 1.0);
 	return a;
 }
 double rand_u(){

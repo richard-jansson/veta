@@ -19,6 +19,9 @@
 #include<stdint.h>
 #include<stdlib.h>
 
+#define LUMINOSITY_LO = 0.5
+#define LUMINOSITY_HI = 1.0
+
 // Constants for RGB - YUV conversion
 #define C_1 1.370705
 #define C_2 0.698001
