@@ -342,7 +342,15 @@ void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
 	HPEN pen=CreatePen(PS_SOLID,1,RGB(255,255,255));
 	SelectObject(_hdc,pen);
 
-	DrawText(_hdc,txt,-1,&r,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+	char *tmp = NULL;
+	LPCSTR output = tmp;
+	tmp = malloc(strlen(txt) * 2 + 2);
+	
+	for (int i = 0; i < strlen(txt) + 1;i++) {
+		tmp[i * 2] = txt[i];
+		tmp[i * 2 + 1] = 0;
+	}
+	DrawText(_hdc,tmp,-1,&r,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
 
 	DeleteObject(pen);
 //	TextOutW(_hdc,x,y,txt,strlen(txt));
