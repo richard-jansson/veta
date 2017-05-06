@@ -142,14 +142,29 @@ LRESULT CALLBACK _win_callback(HWND win,UINT msg,WPARAM w,LPARAM l){
 	return DefWindowProc(win,msg,w,l);
 }
 
-void _setupkeymap(){
-// FIXME: get the symbols from the current layout?
-	int count='Z'-'A'+1;
-	symbol_list=malloc(sizeof(symbol)*count);
+#define __MAX_KEYS 256
+char keys[__MAX_KEYS];
+int nkeys = 0;
 
-	for(int i=0;i<count;i++){
+int  count = 0;
+// Returns -1 if key stack is full!
+// Returns 0 on success
+void _add_key(char c) {
+	if (nkeys > __MAX_KEYS) return -1;
+	keys[nkeys++] = c;
+	return c;
+}
+
+void _setupkeymap(){
+// All printable ASCII pushed to key stack 
+// FIXME read from configuration file 
+	for (char c = '!';c <= '~';c++) _add_key(c);
+
+	symbol_list=malloc(sizeof(symbol)*nkeys);
+
+	for(int i=0;i<nkeys;i++){
 		char *name=malloc(2);
-		name[0]='A'+i;
+		name[0]=keys[i];
 		name[1]='\0';
 
 		symbol_list[i].name=name;
@@ -158,12 +173,13 @@ void _setupkeymap(){
 		symbol_list[i].toggled=0;
 
 		symbol_win *s=malloc(sizeof(symbol_win));
-		s->c='A'+i;
+		s->c = keys[i];
 		symbol_list[i].data=s;
 
 	}
 
-	onhaskeymap(symbol_list,count);
+	onhaskeymap(symbol_list,nkeys);
+	count = nkeys;
 }
 
 event_t *_get_event_from_keycode(int keycode){
@@ -278,7 +294,8 @@ void ui_init(int w,int h,int x,int y){
 //	UpdateLayeredWindow(_win,NULL,NULL,NULL,NULL,NULL,RGB(255,255,255),&blend,ULW_COLORKEY);
 
 //	if(!SetLayeredWindowAttributes(win,NULL,128,LWA_ALPHA)){
-	if(!SetLayeredWindowAttributes(_win,NULL,204,LWA_ALPHA)){
+//	if(!SetLayeredWindowAttributes(_win,NULL,204,LWA_ALPHA)){
+	if (!SetLayeredWindowAttributes(_win, NULL, 230, LWA_ALPHA)) {
 		uk_log("setlayeredwindowattributes failed %i",GetLastError());
 	}
 
