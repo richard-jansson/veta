@@ -59,6 +59,9 @@ void usage(char *cmd){
 void veta_exit(){
 	uk_log("veta exit!");
 	writestate(STATE_FILE,lastX,lastY);
+
+	// FIXME: Add proper scriptability support! 
+	system("veta_exit");
 	debug_exit();
 }
 
@@ -159,6 +162,9 @@ void veta_render(){
 	}
 	
 	render_ui2();
+
+	// FIXME: Cleanup and and add configuration options 
+	vo_screenshot("var not used!", WIDTH, HEIGHT);
 #ifdef DEBUG
 	rgb black=(rgb){0,0,0};
 	rgb white=(rgb){0xff,0xff,0xff};

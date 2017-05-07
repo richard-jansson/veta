@@ -6,10 +6,8 @@ LFLAGS=-lm -g -lgdi32 -Wl,--subsystem,windows
 #CFLAGS_DEBUG=-g `pkg-config --cflags x11 xtst` -DDEBUG 
 #LFLAGS=`pkg-config --libs x11 xtst` -lm -pg
 
-
-SRC=veta.c debug.c win.c conf.c cell.c color.c ui.c ui_logic.c 
-OBJ=veta.o debug.o win.o conf.o cell.o color.o ui.o ui_logic.o
-
+SRC=veta.c debug.c win.c conf.c cell.c color.c ui.c ui_logic.c vid.c pbm.c
+OBJ=veta.o debug.o win.o conf.o cell.o color.o ui.o ui_logic.o vid.o pbm.o
 
 all: veta
 

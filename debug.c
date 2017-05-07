@@ -49,6 +49,8 @@ long get_msec(){
 }
 
 void _uk_log(const char *file,int line,const char *fmt,...){
+	// whatever
+	int a = 123;
 #ifdef DEBUG	
 	// TODO a bit of waste here perhaps
 	char timebuf[128];
@@ -75,4 +77,11 @@ void _uk_log(const char *file,int line,const char *fmt,...){
 
 void debug_exit(){
 	fclose(log_file);
+}
+
+// FIXME and implement varargs
+#define UK_RET_MSG "Return from func (%s) @ (%s:%n) failed: %s"
+void *_uk_ret(char *msg){
+	uk_log("Func returned, failed since: %");
+	return NULL;
 }

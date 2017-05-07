@@ -17,14 +17,16 @@
  *	along with Veta.  If not, see <http://www.gnu.org/licenses/>.
 */
 /*
- * Platform specific code for the windows interface
- *
- * A good reference for GDI code:
- * http://zetcode.com/gui/winapi/gdi/
- *
- */
+	 * Platform specific code for the windows interface
+	 *
+	 * A good reference for GDI code:
+	 * http://zetcode.com/gui/winapi/gdi/
+	 *
+	 */
 
 #include <windows.h>
+#include <stdio.h>
+#include <ctype.h>
 
 #include <assert.h>
 
@@ -133,7 +135,7 @@ LRESULT CALLBACK _win_callback(HWND win,UINT msg,WPARAM w,LPARAM l){
 			break;
 		case WM_PAINT:
 			_hdc=BeginPaint(_win,&_ps);
-			onrender();	
+			onrender();	 
 			EndPaint(_win,&_ps);
 			break;
 		default:
@@ -149,7 +151,7 @@ int nkeys = 0;
 int  count = 0;
 // Returns -1 if key stack is full!
 // Returns 0 on success
-void _add_key(char c) {
+int _add_key(char c) {
 	if (nkeys > __MAX_KEYS) return -1;
 	keys[nkeys++] = c;
 	return c;
@@ -372,6 +374,17 @@ void draw_text_box(char *txt,int w,int h,int x,int y,rgb c1,rgb c2){
 	DeleteObject(pen);
 //	TextOutW(_hdc,x,y,txt,strlen(txt));
 }
+
+rgb getpixel(int x,int y){
+	rgb c;
+	COLORREF r=GetPixel(_hdc,x,y);
+	c.r=GetRValue(r);
+	c.g=GetGValue(r);
+	c.b=GetBValue(r);
+
+	return c;
+}
+
 void refresh(){
 	InvalidateRect(_win,NULL,TRUE);
 }
