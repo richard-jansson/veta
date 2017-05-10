@@ -32,6 +32,8 @@
 
 #define FORMAT "%s %i %i %i\n"
 
+
+int __x11_frame=0,__getpixel_cframe=0;
 int start_time=0;
 int exposes=0;
 int winX=0,winY=0;
@@ -479,6 +481,7 @@ void ui_loop(int full_throttle){
 				onrender();
 
 				reset_clip();
+				__x11_frame++;
 				XCopyArea(dpy,double_buffer,win,gc,0,0,WIDTH,HEIGHT,0,0);
 //				XFlush(dpy);
 				break;
@@ -861,7 +864,7 @@ void grabkeys(){
 		if(keybindings[i].keycode==23) continue;
 		for(int j=0;j<8;j++){
 			if( mod & keybindings[i].modifiers || mod == 0 ){
-				XGrabKey(dpy,keybindings[i].keycode,mod,root,False,GrabModeAsync,GrabModeAsync);
+			XGrabKey(dpy,keybindings[i].keycode,mod,root,False,GrabModeAsync,GrabModeAsync);
 				XFlush(dpy);
 			}
 			mod=!mod?1:mod*2;
@@ -885,5 +888,32 @@ void ungrabkeys(){
 	}
 	XFlush(dpy);
 }
+XImage *_img = NULL;
+Colormap *_cmap;
+void rec_start(){
+	_img=XGetImage(dpy,double_buffer,0,0,WIDTH,HEIGHT,AllPlanes,ZPixmap);
+}
 
+rgb cache[65537];
 
+rgb getpixel(int x,int y){
+	if(_img == NULL ) return;
+	if(x>=WIDTH || y>=HEIGHT) return;
+	Colormap cmap=attr.colormap;
+	unsigned int c;
+	c=XGetPixel(_img,x,y); 
+	if( c > 65536) return (rgb){0,0,0};
+	if(cache[c+1].act == 0){
+		XColor xc;
+		rgb ret;
+
+		XQueryColor(dpy,cmap,&xc);
+		cache[c+1].r=ret.r=xc.red>>8;
+		cache[c+1].g=ret.g=xc.green>>8;
+		cache[c+1].b=ret.b=xc.blue>>8;
+		cache[c+1].act=1;
+		return ret;
+	}
+
+	return cache[c+1]; 
+}

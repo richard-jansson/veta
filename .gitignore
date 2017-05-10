@@ -7,3 +7,9 @@ veta.state
 commit_msg
 gmon.out
 conf.json_somtankt
+ver.h
+veta.exe
+debug.sh
+backtrace.txt
+nm
+*exe

@@ -162,6 +162,7 @@ int _clear_selection(cell *curr,void *data){
 }
 
 int select_cell(cell *root, int cell){
+	assert(root);
 	if(cell<0 || cell >= root->nchildren) return 1;
 
 	recurse_cells(root,_select_cell,NULL);

@@ -37,7 +37,13 @@ cell *root_cell=NULL;
 /* Configuration options */
 char *symbol_file=NULL; 
 sym_mode_t symbol_mode;
+
+#ifdef WINDOWS
 sel_mode_t selection_mode=ZOOM;
+//sel_mode_t selection_mode=HIGHLIGHT;
+#else
+sel_mode_t selection_mode=ZOOM;
+#endif
 /* end of configuration options */
 
 void usage(char *cmd){
@@ -54,8 +60,14 @@ void veta_exit(){
 
 	conf_save_position(lastX,lastY);
 
+	writestate(STATE_FILE,lastX,lastY);
+
+	// FIXME: Add proper scriptability support! 
+	system("veta_exit");
 	debug_exit();
 }
+
+symbol *root = NULL;
 
 void veta_handleevent(event_t *event){
 	switch(event->type){
@@ -69,7 +81,8 @@ void veta_handleevent(event_t *event){
 			veta_render();
 			break;
 		case SELECT_CELL:
-			uk_log("select cell %i\n",event->cell);
+			uk_log("select cell %i",event->cell);
+//			debug_print_tree(root);
 			select_cell(root_cell,event->cell);
 			symbol *sym;
 			if(NULL!=(sym=get_selected_symbol(root_cell))){
@@ -77,10 +90,13 @@ void veta_handleevent(event_t *event){
 				if(ui2_onselect_symbol(sym)) break;
 				sendkey(sym->data,1,0);
 			}
-			veta_render();
+			refresh();
 			break;
 		case UNDEFINED:
 			uk_log("got event UNDEFINED\n"); 
+			break;
+		default:
+			uk_log("WARNING undefined event type");
 			break;
 	}
 }
@@ -159,16 +175,33 @@ void veta_render(){
 	}
 	
 	render_ui2();
+
+	// FIXME: Cleanup and and add configuration options 
+	vo_screenshot("var not used!", WIDTH, HEIGHT);
 #ifdef DEBUG
 	rgb black=(rgb){0,0,0};
 	rgb white=(rgb){0xff,0xff,0xff};
-	draw_text_box(BUILD,650,40,20,HEIGHT-45,black,black);
+	draw_text_box(BUILD,650,40,20,HEIGHT-45,white,black);
 #endif
 }
 
 void veta_click(int x,int y){
 }
 
+#ifdef WINDOWS 
+int WINAPI WinMain(HINSTANCE h,HINSTANCE hprev,LPSTR cmdline,int n){
+	debug_init(LOG_FILE);
+	uk_log("windows build: %s",BUILD);
+
+	int full_throttle=0;
+	nCmdShow=n;
+
+	hinstance=h;
+	symbol_mode=LOAD;
+
+	// FIXME temporary debug shit
+
+#else
 int main(int argc,char *argv[]){
 	debug_init(LOG_FILE);
 	
@@ -202,6 +235,7 @@ int main(int argc,char *argv[]){
 			usage(argv[0]);
 		}
 	}
+#endif
 
 	// Set up callbacks 
 	ui_onevent(veta_handleevent);
@@ -221,6 +255,9 @@ int main(int argc,char *argv[]){
 		fprintf(stderr,"Failed to load symbols\n");
 		exit(1);
 	}
+
+// Set up low level graphics and load the keymap
+//	ui_init(WIDTH,HEIGHT,st->x,st->y);
 
 	ui2_init();
 

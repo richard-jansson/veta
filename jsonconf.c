@@ -96,7 +96,7 @@ float conf_get_float(char *key,float def){
 }
 int _conf_get_int(json_t *root, char *key,int def){
 	json_t *integer;
-	uk_log("looking for key %s",key);
+//	uk_log("looking for key %s",key);
 	integer=json_object_get(root,key);
 	if(!json_is_integer(integer)){
 		uk_log("configuration error %s is supposed to be an integer",key);

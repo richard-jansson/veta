@@ -19,3 +19,13 @@ keybindings in options on windows
 wrap XGrabkey in different process to avoid crashes 
 Configuration and keybinding for windows 
 https://github.com/facebookresearch/fastText/blob/master/pretrained-vectors.md
+Add configuration option for alpha value
+Animate transitions?
+Configure the keys that are drawn on screen 
+test window topmost on windows
+when the window is closed the executable must exit
+how to create ver.h in visual studio?
+program should be able to be started from any folder: that is create files in home directory or registry
+Program should not crash when X is not running
+Opacity in openbox
+Recording interface for events, and playback functionallity 

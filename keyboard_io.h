@@ -18,6 +18,7 @@
 */
 /* This is platform specific */ 
 
+#ifdef X11
 #include<X11/Xlib.h>
 
 typedef struct _modifier_x11 {
@@ -34,6 +35,23 @@ typedef struct _symbol_x11 {
 	int modifier;
 	int is_modifier;
 }symbol_x11;
+
+
+int is_modifier(KeyCode keycode);
+KeyCode get_modifier_keycode(int modifier);
+KeySym get_modifier_keysym(int modifier);
+#endif 
+
+#ifdef WINDOWS
+typedef struct _symbol_win {
+	char c;
+}symbol_win;
+
+// FIXME: implement modifier win
+typedef struct _modifier_win {
+	int a;
+}modifier_win;
+#endif
 
 typedef struct _keyboardio{
 //	SDL_mutex *mutex;
@@ -56,9 +74,6 @@ typedef struct _event{
 keyboardio * init_keyboardio();
 int get_event(event_t *event);
 void sendkey(void *sym,int press_and_release,int toggled);
-int is_modifier(KeyCode keycode);
 
-KeyCode get_modifier_keycode(int modifier);
-KeySym get_modifier_keysym(int modifier);
 
 char *get_select_cell_name(int n);
